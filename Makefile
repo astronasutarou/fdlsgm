@@ -9,15 +9,13 @@ OBJECT := $(patsubst %.cc,%.o,$(SOURCE))
 
 .PHONY: clean test
 
-all: $(OBJECT)
-	echo $(OBJECT)
+all: test
 
-test: test.cc $(OBJECT)
-	$(CXX) -o $@ $^
+test: test.cc $(OBJECT) $(HEADER)
+	$(CXX) -o $@ $< $(OBJECT)
 
 .cc.o: $(HEADER)
-	$(CXX) -o $@ -c $^
-
+	$(CXX) -o $@ -c $<
 
 clean:
 	rm -r $(OBJECT)
