@@ -17,7 +17,7 @@ namespace fdlsgm {
     : _x0(__x0),_y0(__y0),_z0(__z0),_x1(__x1),_y1(__y1),_z1(__z1),
       _r(std::sqrt(dx()*dx()+dy()*dy())),
       _l(std::sqrt(dx()*dx()+dy()*dy()+dz()*dz())),
-      _pa(fdlsgm::wrap_angle(std::atan2(-dx(), dy())))
+      _pa(std::atan2(-dx(), dy()))
   {
     if (_l <= std::numeric_limits<double>::epsilon())
       throw std::invalid_argument("the length of dls is too small.");

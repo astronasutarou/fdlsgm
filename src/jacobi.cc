@@ -13,6 +13,7 @@ namespace fdlsgm {
   constexpr index_t matrix_size = 4;
   constexpr index_t max_iter = 2e3;
 
+
   /** index of the largest off-diagonal element in k-th row */
   const index_t
   maximum_index_row(const matrix4x4<double>& matrix,
@@ -58,7 +59,7 @@ namespace fdlsgm {
   }
 
   const matrix4x4<double>
-  checksum(const matrix4x4<double> A, const matrix4x4<double> U)
+  calculate_checksum(const matrix4x4<double> A, const matrix4x4<double> U)
   {
     matrix4x4<double> X(zeros4x4);
     for (index_t i=0; i<matrix_size; i++)
@@ -141,10 +142,6 @@ namespace fdlsgm {
     }
 
     return E;
-    // printf("\n");
-    // printf("#\teigen values = ");
-    // for (size_t i=0; i<matrix_size; i++) printf("[%8.2le]", eigen[i]);
-    // printf("\n");
   }
 
 }

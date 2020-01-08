@@ -50,22 +50,6 @@ namespace fdlsgm {
      vector4<double>{0,0,1,0},vector4<double>{0,0,0,1}};
 
 
-  /** Constrain Angle between [-180, +180]. */
-  double wrap_angle(const double);
-
-  /** Calculate One-Dimensional Angle Distance. */
-  double angle_separation(const double, const double);
-
-  /** Normalize Two-Dimensional Vector */
-  const vector2<double> unit_vector(const vector2<double>&);
-
-  /** Normalize Three-Dimensional Vector */
-  const vector3<double> unit_vector(const vector3<double>&);
-
-  /** Calculate Outer Product. */
-  const vector3<double>
-  outer_product(const vector3<double>&,const vector3<double>&);
-
   /** Calculate Eigen Vectors with the Jacobi algorithm */
   const matrix4x4<double>
   eigenvector_jacobi_4x4(const matrix4x4<double>&);
@@ -201,6 +185,8 @@ namespace fdlsgm {
     /** total length */
     double length() const;
 
+    size_t size() const;
+
     template<class T>
     double dot(const T&) const;
 
@@ -224,8 +210,11 @@ namespace fdlsgm {
     matrix4x4<double> _f;
 
     double root_position(const vector3<double>&) const;
-    double overlap_length(const dls& dls) const;
-    double gap_length(const dls& dls) const;
+    double overlap_length(const dls&) const;
+    double gap_length(const dls&) const;
+    double gap_length(const baseline&) const;
+
+    void update_matrix(const dls&);
   };
 
 

@@ -9,6 +9,91 @@
 
 namespace fdlsgm {
 
+  double
+  wrap_angle(double angle)
+  {
+    if (angle > M_PI || angle < -M_PI)
+      angle = angle-std::floor(angle/(M_PI*2.0))*(M_PI*2.0);
+    return angle;
+  }
+
+  double
+  angle_separation(const double d1, const double d2)
+  {
+    return std::abs(fdlsgm::wrap_angle(d1-d2));
+  }
+
+  const vector2<double>
+  unit_vector(const vector2<double>& v)
+  {
+    double n = std::sqrt(v[0]*v[0]+v[1]*v[1]);
+    return { v[0]/n, v[1]/n };
+  }
+
+  const vector3<double>
+  unit_vector(const vector3<double>& v)
+  {
+    double n = std::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+    return { v[0]/n, v[1]/n, v[2]/n };
+  }
+
+  const vector3<double>
+  outer_product(const vector3<double>& o1, const vector3<double>& o2)
+  {
+    const double& x = o1[1]*o2[2] - o1[2]*o2[1];
+    const double& y = o1[2]*o2[0] - o1[0]*o2[2];
+    const double& z = o1[0]*o2[1] - o1[1]*o2[0];
+    return { x, y, z };
+  }
+  const vector3<double>
+  outer_product(const vector4<double>& o1, const vector4<double>& o2)
+  {
+    const double& x = o1[1]*o2[2] - o1[2]*o2[1];
+    const double& y = o1[2]*o2[0] - o1[0]*o2[2];
+    const double& z = o1[0]*o2[1] - o1[1]*o2[0];
+    return { x, y, z };
+  }
+
+  const vector3<double>
+  linalg_gauss_solve(const matrix3x3<double>& A, const vector3<double>& b)
+  {
+    vector3<double> x;
+    vector3<double> Ap0 =
+      { 1.0, A[1][0]/A[0][0], A[2][0]/A[0][0] };
+    vector3<double> Ap1 =
+      { 0.0, A[1][1]-A[0][1]*Ap0[1], A[2][1]-A[0][1]*Ap0[2] };
+    vector3<double> Ap2 =
+      { 0.0, A[1][2]-A[0][2]*Ap0[1], A[2][2]-A[0][2]*Ap0[2] };
+    double bp0 = b[0]/A[0][0];
+    double bp1 = b[1]-A[0][1]*bp0;
+    double bp2 = b[2]-A[0][2]*bp0;
+
+    /* normalize Ap1,bp1 */
+    bp1 /= Ap1[1];
+    Ap1[2] /= Ap1[1]; Ap1[1] = 1.0;
+    /* eliminate Ap2[1] */
+    bp2 -= bp1*Ap2[1];
+    Ap2[2] -= Ap2[1]*Ap1[2]; Ap2[1] = 0.0;
+    /* normalize Ap2,bp2 */
+    bp2 /= Ap2[2]; Ap2[2] = 1.0;
+
+    x[2] = bp2;
+    x[1] = bp1 - Ap1[2]*x[2];
+    x[0] = bp0 - Ap0[1]*x[1] - Ap0[2]*x[2];
+    return x;
+  }
+
+  const vector3<double>
+  linalg_gauss_solve(const matrix4x4<double>& U) {
+    const matrix3x3<double> A =
+      { vector3<double>{ U[0][0], U[0][1], U[0][2] },
+        vector3<double>{ U[1][0], U[1][1], U[1][2] },
+        vector3<double>{ U[2][0], U[2][1], U[2][2] } };
+    const vector3<double> b = { U[0][3], U[1][3], U[2][3] };
+    return linalg_gauss_solve(A, b);
+  }
+
+
   baseline::baseline(const ndls& ndls):
     _x0(ndls.second.x0()),_y0(ndls.second.y0()),_z0(ndls.second.z0()),
     _x1(ndls.second.x1()),_y1(ndls.second.y1()),_z1(ndls.second.z1()),
@@ -28,56 +113,15 @@ namespace fdlsgm {
     } else {
       _elements.insert(n);
       if (root_position(e.vertices()[0]) < 0.0) {
-        auto& v = e.vertices()[0];
-        _x0 = v[0]; _y0 = v[1]; _z0 = v[2];
+        _x0 = e.x0(); _y0 = e.y0(); _z0 = e.z0();
+        _l  = std::sqrt(dx()*dx()+dy()*dy()+dz()*dz());
       }
       if (root_position(e.vertices()[1]) > 1.0) {
-        auto& v = e.vertices()[1];
-        _x1 = v[0]; _y1 = v[1]; _z1 = v[2];
+        _x1 = e.x1(); _y1 = e.y1(); _z1 = e.z1();
+        _l  = std::sqrt(dx()*dx()+dy()*dy()+dz()*dz());
       }
-      _f[0][0] += (e.length()/2.0)*(e.x0()*e.x0()+e.x1()*e.x1());
-      _f[1][1] += (e.length()/2.0)*(e.y0()*e.y0()+e.y1()*e.y1());
-      _f[2][2] += (e.length()/2.0)*(e.z0()*e.z0()+e.z1()*e.z1());
-      _f[3][3] += (e.length());
-      _f[0][1] += (e.length()/2.0)*(e.x0()*e.y0()+e.x1()*e.y1());
-      _f[1][0] += (e.length()/2.0)*(e.y0()*e.x0()+e.y1()*e.x1());
-      _f[0][2] += (e.length()/2.0)*(e.x0()*e.z0()+e.x1()*e.z1());
-      _f[2][0] += (e.length()/2.0)*(e.z0()*e.x0()+e.z1()*e.x1());
-      _f[0][3] += (e.length()/2.0)*(e.x0()*(-1.0)+e.x1()*(-1.0));
-      _f[3][0] += (e.length()/2.0)*((-1.0)*e.x0()+(-1.0)*e.x1());
-      _f[1][2] += (e.length()/2.0)*(e.y0()*e.z0()+e.y1()*e.z1());
-      _f[2][1] += (e.length()/2.0)*(e.z0()*e.y0()+e.z1()*e.y1());
-      _f[1][3] += (e.length()/2.0)*(e.y0()*(-1.0)+e.y1()*(-1.0));
-      _f[3][1] += (e.length()/2.0)*((-1.0)*e.y0()+(-1.0)*e.y1());
-      _f[2][3] += (e.length()/2.0)*(e.z0()*(-1.0)+e.z1()*(-1.0));
-      _f[3][2] += (e.length()/2.0)*((-1.0)*e.z0()+(-1.0)*e.z1());
 
-      printf("\n\n[\n");
-      for (size_t i=0; i<4; i++) {
-        printf(" [ ");
-        for (size_t j=0; j<4; j++) {
-          printf("%16.8le", _f[j][i]);
-        }
-        printf(" ],\n");
-      }
-      printf("];\n");
-
-      auto& eigen = eigenvector_jacobi_4x4(_f);
-
-      printf("\n[\n");
-      for (size_t i=0; i<4; i++) {
-        printf(" [ ");
-        for (size_t j=0; j<4; j++) {
-          printf("%16.8le", eigen[j][i]);
-        }
-        printf(" ],\n");
-      }
-      printf("];\n\n");
-
-      _r  = std::sqrt(dx()*dx()+dy()*dy());
-      _l  = std::sqrt(dx()*dx()+dy()*dy()+dz()*dz());
-      _pa = fdlsgm::wrap_angle(std::atan2(-dx(), dy()));
-      _ndx += e.dx(); _ndy += e.dy();
+      update_matrix(e);
       return true;
     }
   }
@@ -99,6 +143,8 @@ namespace fdlsgm {
   double baseline::pa() const { return _pa; }
   double baseline::radius() const { return _r; }
   double baseline::length() const { return _l; }
+
+  size_t baseline::size() const { return _elements.size(); }
 
   const segment<double>
   baseline::vertices() const
@@ -218,11 +264,16 @@ namespace fdlsgm {
     printf("# baseline: [%08lx]\n", (size_t)this);
     printf("#\tVertex 0      : (%lf %lf %lf)\n", x0(),y0(),z0());
     printf("#\tVertex 1      : (%lf %lf %lf)\n", x1(),y1(),z1());
+    printf("#\tVector        : (%lf %lf %lf)\n", ex(),ey(),ez());
     printf("#\tPosition Angle: %lf\n", pa()*180.0/M_PI);
     printf("#\tLength        : %lf\n", length());
     printf("#\tRadius        : %lf\n", radius());
     printf("#\tVertices      : [ ");
     for (auto& n: _elements) printf("%ld ", n);  printf("]\n");
+    printf("%3ld %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf",
+           (size_t)0, x0(), y0(), z0(), x1(), y1(), z1());
+    printf("   # (r,l,t) = (%.2lf, %.2lf, %.2lf)\n",
+           radius(), length(), pa()/M_PI*180.0);
   }
 
 
@@ -253,6 +304,59 @@ namespace fdlsgm {
     auto& v1 = dls.vertices()[1];
     double t0 = root_position(v0), t1 = root_position(v1);
     return (t1<0.0)?-t1:(t0>1.0)?t0-1.0:0.0;
+  }
+
+  double
+  baseline::gap_length(const baseline& bl) const
+  {
+    auto& v0 = bl.vertices()[0];
+    auto& v1 = bl.vertices()[1];
+    double t0 = root_position(v0), t1 = root_position(v1);
+    return (t1<0.0)?-t1:(t0>1.0)?t0-1.0:0.0;
+  }
+
+  void
+  baseline::update_matrix(const dls& dls)
+  {
+    _f[0][0] += (dls.length()/2.0)*(dls.x0()*dls.x0()+dls.x1()*dls.x1());
+    _f[1][1] += (dls.length()/2.0)*(dls.y0()*dls.y0()+dls.y1()*dls.y1());
+    _f[2][2] += (dls.length()/2.0)*(dls.z0()*dls.z0()+dls.z1()*dls.z1());
+    _f[3][3] += (dls.length());
+    _f[0][1] += (dls.length()/2.0)*(dls.x0()*dls.y0()+dls.x1()*dls.y1());
+    _f[1][0] += (dls.length()/2.0)*(dls.y0()*dls.x0()+dls.y1()*dls.x1());
+    _f[0][2] += (dls.length()/2.0)*(dls.x0()*dls.z0()+dls.x1()*dls.z1());
+    _f[2][0] += (dls.length()/2.0)*(dls.z0()*dls.x0()+dls.z1()*dls.x1());
+    _f[0][3] += (dls.length()/2.0)*(dls.x0()*(-1.0)+dls.x1()*(-1.0));
+    _f[3][0] += (dls.length()/2.0)*((-1.0)*dls.x0()+(-1.0)*dls.x1());
+    _f[1][2] += (dls.length()/2.0)*(dls.y0()*dls.z0()+dls.y1()*dls.z1());
+    _f[2][1] += (dls.length()/2.0)*(dls.z0()*dls.y0()+dls.z1()*dls.y1());
+    _f[1][3] += (dls.length()/2.0)*(dls.y0()*(-1.0)+dls.y1()*(-1.0));
+    _f[3][1] += (dls.length()/2.0)*((-1.0)*dls.y0()+(-1.0)*dls.y1());
+    _f[2][3] += (dls.length()/2.0)*(dls.z0()*(-1.0)+dls.z1()*(-1.0));
+    _f[3][2] += (dls.length()/2.0)*((-1.0)*dls.z0()+(-1.0)*dls.z1());
+
+    auto& eigen = eigenvector_jacobi_4x4(_f);
+    auto& n0 = eigen[0];
+    auto& n1 = eigen[1];
+    const auto& d = unit_vector(outer_product(n0, n1));
+    const vector3<double>& p =
+      { (x0()+x1())/2.0, (y0()+y1())/2.0, (z0()+z1())/2.0 };
+
+    const double& t0 =
+      ((x0()-p[0])*d[0]+(y0()-p[1])*d[1]+(z0()-p[2])*d[2]);
+    const double& t1 =
+      ((x1()-p[0])*d[0]+(y1()-p[1])*d[1]+(z1()-p[2])*d[2]);
+    printf("%lf %lf\n", t0, t1);
+    const vector3<double>& v0 =
+      { p[0]+t0*d[0], p[1]+t0*d[1], p[2]+t0*d[2] };
+    const vector3<double>& v1 =
+      { p[0]+t1*d[0], p[1]+t1*d[1], p[2]+t1*d[2] };
+
+    _x0 = v0[0];_y0 = v0[1];_z0 = v0[2];
+    _x1 = v1[0];_y1 = v1[1];_z1 = v1[2];
+    _l  = std::sqrt(dx()*dx()+dy()*dy()+dz()*dz());
+    _r  = std::sqrt(dx()*dx()+dy()*dy());
+    _pa = std::atan2(-dx(), dy());
   }
 
 }
