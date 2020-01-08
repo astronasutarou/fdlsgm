@@ -12,32 +12,68 @@
 #include<cstdint>
 #include<cstdlib>
 #include<cmath>
+#include<limits>
 #include<array>
 #include<set>
 #include<map>
 #include<unordered_map>
 #include<algorithm>
+#include<utility>
 #include<exception>
 
 
 namespace fdlsgm {
-  /** Two-Dimensional Vector */
+  /** Two-Dimensional Vector. */
   template <class T> using vector2 = std::array<T, 2>;
 
-  /** Three-Dimensional Vector */
+  /** Three-Dimensional Vector. */
   template <class T> using vector3 = std::array<T, 3>;
 
+  /** Four-Dimensional Vector. */
+  template <class T> using vector4 = std::array<T, 4>;
 
-  /** Constrain Angle between [-180, +180] */
+  /** Line Segment. */
+  template <class T> using segment = std::array<vector3<T>, 2>;
+
+  /** 3x3 Matrix */
+  template <class T> using matrix3x3 = std::array<vector3<T>,3>;
+
+  /** 4x4 Matrix */
+  template <class T> using matrix4x4 = std::array<vector4<T>,4>;
+
+  constexpr matrix4x4<double> zeros4x4 =
+    {vector4<double>{0,0,0,0},vector4<double>{0,0,0,0},
+     vector4<double>{0,0,0,0},vector4<double>{0,0,0,0}};
+
+  constexpr matrix4x4<double> ident4x4 =
+    {vector4<double>{1,0,0,0},vector4<double>{0,1,0,0},
+     vector4<double>{0,0,1,0},vector4<double>{0,0,0,1}};
+
+
+  /** Constrain Angle between [-180, +180]. */
   double wrap_angle(const double);
 
-  /** Calcurate One-Dimensional Angle Distance */
+  /** Calculate One-Dimensional Angle Distance. */
   double angle_separation(const double, const double);
+
+  /** Normalize Two-Dimensional Vector */
+  const vector2<double> unit_vector(const vector2<double>&);
+
+  /** Normalize Three-Dimensional Vector */
+  const vector3<double> unit_vector(const vector3<double>&);
+
+  /** Calculate Outer Product. */
+  const vector3<double>
+  outer_product(const vector3<double>&,const vector3<double>&);
+
+  /** Calculate Eigen Vectors with the Jacobi algorithm */
+  const matrix4x4<double>
+  eigenvector_jacobi_4x4(const matrix4x4<double>&);
 
   /**
    * @brief Directed Line Segment
    */
-  class DLS {
+  class dls {
   public:
     /**
      * @brief Constuct a DLS with a pair of three-dimensional vectors.
@@ -46,24 +82,33 @@ namespace fdlsgm {
      * @note The z-coordinate of the first vertex should be smaller than that
      *       of the second vertex.
      */
-    DLS(const vector3<double>&, const vector3<double>&);
+    dls(const vector3<double>&, const vector3<double>&);
 
     /**
      * @brief Constuct a DLS with six coordinate values.
      * @note Two Z-values should not be the same to define the direction.
      */
-    DLS(const double, const double, const double,
+    dls(const double, const double, const double,
         const double, const double, const double);
 
-    double x1() const; /** x-coordinate of the first vertex */
-    double y1() const; /** y-coordinate of the first vertex */
-    double z1() const; /** z-coordinate of the first vertex */
-    double x2() const; /** x-coordinate of the second vertex */
-    double y2() const; /** y-coordinate of the second vertex */
-    double z2() const; /** z-coordinate of the second vertex */
+    double x0() const; /** x-coordinate of the first vertex */
+    double y0() const; /** y-coordinate of the first vertex */
+    double z0() const; /** z-coordinate of the first vertex */
+    double x1() const; /** x-coordinate of the second vertex */
+    double y1() const; /** y-coordinate of the second vertex */
+    double z1() const; /** z-coordinate of the second vertex */
     double dx() const; /** difference in x-coordinates */
     double dy() const; /** difference in y-coordinates */
     double dz() const; /** difference in z-coordinates */
+
+    double ex() const; /** x-element of the unit vector */
+    double ey() const; /** y-element of the unit vector */
+    double ez() const; /** z-element of the unit vector */
+
+    const segment<double> vertices() const;
+
+    /** unit vector */
+    const vector3<double> unit() const;
 
     /**
      * @brief Position Angle of the DLS in radian.
@@ -82,42 +127,65 @@ namespace fdlsgm {
     double length() const;
 
     /** Dot product of the two DLSs. */
-    double dot(const DLS& other) const;
+    template<class T>
+    double dot(const T&) const;
 
     /**
      * @brief Angle between two DLSs in radius
      */
-    double argument(const DLS& other) const;
+    template<class T>
+    double argument(const T&) const;
+
+    template<class T>
+    double projected_angle(const T&) const;
 
     /** Print function for debugging. */
     void dprint() const;
 
   private:
-    double _x1, _y1, _z1; /** first vertex  */
-    double _x2, _y2, _z2; /** second vertex */
-    double _dx, _dy, _dz; /** differences   */
-    double _r;            /** radius */
-    double _l;            /** length */
-    double _pa;           /** position angle */
+    const double _x0, _y0, _z0; /** first vertex  */
+    const double _x1, _y1, _z1; /** second vertex */
+    const double _r;            /** radius */
+    const double _l;            /** length */
+    const double _pa;           /** position angle */
   };
 
 
   /** */
-  typedef std::pair<size_t,DLS> nDLS;
+  typedef std::pair<size_t,dls> ndls;
 
   /** */
-  typedef std::map<size_t,DLS> DLSpool;
+  typedef std::map<size_t,dls> dlspool;
 
 
-  class BaseLine {
+  class baseline {
   public:
     /**
-     * @brief Constuct a BaseLine.
+     * @brief Constuct a baseline.
      * @param[in] dls: a pair of (size_t, DLS)
      */
-    BaseLine(const nDLS&);
+    baseline(const ndls&);
 
-    void append(const nDLS&);
+    bool append(const ndls&);
+
+    double x0() const; /** x-coordinate of the first vertex */
+    double y0() const; /** y-coordinate of the first vertex */
+    double z0() const; /** z-coordinate of the first vertex */
+    double x1() const; /** x-coordinate of the second vertex */
+    double y1() const; /** y-coordinate of the second vertex */
+    double z1() const; /** z-coordinate of the second vertex */
+    double dx() const; /** difference in x-coordinates */
+    double dy() const; /** difference in y-coordinates */
+    double dz() const; /** difference in z-coordinates */
+
+    double ex() const; /** x-element of the unit vector */
+    double ey() const; /** y-element of the unit vector */
+    double ez() const; /** z-element of the unit vector */
+
+    const segment<double> vertices() const;
+
+    /** unit vector */
+    const vector3<double> unit() const;
 
     /**
      * @brief Position Angle of the DLS.
@@ -130,17 +198,42 @@ namespace fdlsgm {
      */
     double radius() const;
 
-    double angle_separation(const DLS&) const;
-    double angle_separation(const nDLS&) const;
-    double angle_separation(const BaseLine&) const;
+    /** total length */
+    double length() const;
+
+    template<class T>
+    double dot(const T&) const;
+
+    template<class T>
+    double argument(const T&) const;
+
+    template<class T>
+    double projected_angle(const T&) const;
+
+    double point_distance(const vector3<double>&) const;
+
+    template<class T>
+    double lateral_distance(const T&) const;
 
     /** debug function */
     void dprint() const;
   private:
     std::set<size_t> _elements;
-    double _x1,_y1,_z1,_x2,_y2,_z2,_dx,_dy,_dz;
-    double _pa, _r, _l;
+    double _x0,_y0,_z0,_x1,_y1,_z1;
+    double _pa, _r, _l, _ndx, _ndy;
+    matrix4x4<double> _f;
 
+    double root_position(const vector3<double>&) const;
+    double overlap_length(const dls& dls) const;
+    double gap_length(const dls& dls) const;
+  };
+
+
+  class accumulator {
+  public:
+  private:
+    size_t _nsize;
+    std::multimap<size_t, baseline> _array;
   };
 
 }

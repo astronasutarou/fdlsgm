@@ -6,68 +6,90 @@
  */
 #include "fdlsgm.h"
 
+
 namespace fdlsgm {
 
+  dls::dls(const vector3<double>& __v0, const vector3<double>& __v1)
+    : dls(__v0[0], __v0[1], __v0[2], __v1[0], __v1[1], __v1[2]) {}
 
-  DLS::DLS(const vector3<double>& __v1, const vector3<double>& __v2)
-    : DLS(__v1[0], __v1[1], __v1[2], __v2[0], __v2[1], __v2[2]) {}
-
-  DLS::DLS(const double __x1, const double __y1, const double __z1,
-        const double __x2, const double __y2, const double __z2)
-    : _x1(__x1),_y1(__y1),_z1(__z1),_x2(__x2),_y2(__y2),_z2(__z2),
-      _dx(_x2-_x1),_dy(_y2-_y1),_dz(_z2-_z1)
+  dls::dls(const double __x0, const double __y0, const double __z0,
+           const double __x1, const double __y1, const double __z1)
+    : _x0(__x0),_y0(__y0),_z0(__z0),_x1(__x1),_y1(__y1),_z1(__z1),
+      _r(std::sqrt(dx()*dx()+dy()*dy())),
+      _l(std::sqrt(dx()*dx()+dy()*dy()+dz()*dz())),
+      _pa(fdlsgm::wrap_angle(std::atan2(-dx(), dy())))
   {
-    _r  = std::sqrt(_dx*_dx+_dy*_dy);
-    _l  = std::sqrt(_dx*_dx+_dy*_dy+_dz*_dz);
-    _pa = fdlsgm::wrap_angle(std::atan2(_dx, _dy));
+    if (_l <= std::numeric_limits<double>::epsilon())
+      throw std::invalid_argument("the length of dls is too small.");
   }
 
-  double DLS::x1() const { return _x1; }
-  double DLS::y1() const { return _y1; }
-  double DLS::z1() const { return _z1; }
-  double DLS::x2() const { return _x2; }
-  double DLS::y2() const { return _y2; }
-  double DLS::z2() const { return _z2; }
-  double DLS::dx() const { return _dx; }
-  double DLS::dy() const { return _dy; }
-  double DLS::dz() const { return _dz; }
 
-  double
-  DLS::pa() const
+  double dls::x0() const { return _x0; }
+  double dls::y0() const { return _y0; }
+  double dls::z0() const { return _z0; }
+  double dls::x1() const { return _x1; }
+  double dls::y1() const { return _y1; }
+  double dls::z1() const { return _z1; }
+  double dls::dx() const { return _x1-_x0; }
+  double dls::dy() const { return _y1-_y0; }
+  double dls::dz() const { return _z1-_z0; }
+
+  double dls::ex() const { return dx()/_l; }
+  double dls::ey() const { return dy()/_l; }
+  double dls::ez() const { return dz()/_l; }
+
+  double dls::pa() const { return _pa; }
+  double dls::radius() const { return _r; }
+  double dls::length() const { return _l; }
+
+  const segment<double>
+  dls::vertices() const
   {
-    return _pa;
+    return { vector3<double>{x0(), y0(), z0()},
+             vector3<double>{x1(), y1(), z1()} };
   }
 
-  double
-  DLS::radius() const
+  const vector3<double>
+  dls::unit() const { return { ex(), ey(), ex() }; }
+
+  template<> double
+  dls::dot(const dls& dls) const
   {
-    return _r;
+    return dx()*dls.dx()+dy()*dls.dy()+dz()*dls.dz();
+  }
+  template<> double
+  dls::dot(const ndls& ndls) const
+  {
+    return dx()*ndls.second.dx()+dy()*ndls.second.dy()+dz()*ndls.second.dz();
+  }
+  template<> double
+  dls::dot(const baseline& bl) const
+  {
+    return dx()*bl.dx()+dy()*bl.dy()+dz()*bl.dz();
   }
 
-  double
-  DLS::length() const
+  template<> double
+  dls::argument(const dls& dls) const
   {
-    return _l;
+    return std::acos(dot(dls)/length()/dls.length());
   }
-
-  double
-  DLS::dot(const DLS& other) const
+  template<> double
+  dls::argument(const ndls& ndls) const
   {
-    return dx()*other.dx()+dy()*other.dy()+dz()*other.dz();
+    return std::acos(dot(ndls.second)/length()/ndls.second.length());
   }
-
-  double
-  DLS::argument(const DLS& other) const
+  template<> double
+  dls::argument(const baseline& bl) const
   {
-    return std::acos(dot(other)/length()/other.length());
+    return std::acos(dot(bl)/length()/bl.length());
   }
 
   void
-  DLS::dprint() const
+  dls::dprint() const
   {
-    printf("%8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf # ",
-           _x1,_y1,_z1,_x2,_y2,_z2);
-    printf("(r,l,t) = (%.2lf, %.2lf, %.2lf)\n",
+    printf("%8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf",
+           _x0,_y0,_z0,_x1,_y1,_z1);
+    printf("   # (r,l,t) = (%.2lf, %.2lf, %.2lf)\n",
            radius(), length(), pa()/M_PI*180.0);
   }
 
