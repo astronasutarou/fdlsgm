@@ -212,6 +212,9 @@ namespace fdlsgm {
     double lateral_distance(const ndls&) const;
     double lateral_distance(const baseline&) const;
 
+    double gap_length(const dls&) const;
+    double gap_length(const baseline&) const;
+
     /** debug function */
     void dprint() const;
   private:
@@ -222,8 +225,6 @@ namespace fdlsgm {
 
     double root_position(const vector3<double>&) const;
     double overlap_length(const dls&) const;
-    double gap_length(const dls&) const;
-    double gap_length(const baseline&) const;
 
     void update_matrix(const dls&);
   };
