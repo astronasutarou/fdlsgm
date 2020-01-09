@@ -130,14 +130,16 @@ namespace fdlsgm {
 
       if (root_position(e.vertices()[0]) < 0.0) {
         _x0 = e.x0(); _y0 = e.y0(); _z0 = e.z0();
-        _l  = std::sqrt(dx()*dx()+dy()*dy()+dz()*dz());
+        update_parameters();
       }
       if (root_position(e.vertices()[1]) > 1.0) {
         _x1 = e.x1(); _y1 = e.y1(); _z1 = e.z1();
-        _l  = std::sqrt(dx()*dx()+dy()*dy()+dz()*dz());
+        update_parameters();
       }
 
       update_matrix(e);
+      update_direction();
+      update_parameters();
       return true;
     }
   }
@@ -360,26 +362,32 @@ namespace fdlsgm {
     _f[3][1] += (dls.length()/2.0)*((-1.0)*dls.y0()+(-1.0)*dls.y1());
     _f[2][3] += (dls.length()/2.0)*(dls.z0()*(-1.0)+dls.z1()*(-1.0));
     _f[3][2] += (dls.length()/2.0)*((-1.0)*dls.z0()+(-1.0)*dls.z1());
+  }
 
+  void
+  baseline::update_direction()
+  {
     auto& eigen = eigenvector_jacobi_4x4(_f);
     auto& n0 = eigen[0];
     auto& n1 = eigen[1];
     const auto& d = normalize(outer_product(n0, n1));
-    const vector3<double>& p =
-      { (x0()+x1())/2.0, (y0()+y1())/2.0, (z0()+z1())/2.0 };
 
     const double& t0 =
-      ((x0()-p[0])*d[0]+(y0()-p[1])*d[1]+(z0()-p[2])*d[2]);
+      ((x0()-cx())*d[0]+(y0()-cy())*d[1]+(z0()-cz())*d[2]);
     const double& t1 =
-      ((x1()-p[0])*d[0]+(y1()-p[1])*d[1]+(z1()-p[2])*d[2]);
-    printf("%lf %lf\n", t0, t1);
+      ((x1()-cx())*d[0]+(y1()-cy())*d[1]+(z1()-cz())*d[2]);
     const vector3<double>& v0 =
-      { p[0]+t0*d[0], p[1]+t0*d[1], p[2]+t0*d[2] };
+      { cx()+t0*d[0], cy()+t0*d[1], cz()+t0*d[2] };
     const vector3<double>& v1 =
-      { p[0]+t1*d[0], p[1]+t1*d[1], p[2]+t1*d[2] };
+      { cx()+t1*d[0], cy()+t1*d[1], cz()+t1*d[2] };
 
-    _x0 = v0[0];_y0 = v0[1];_z0 = v0[2];
-    _x1 = v1[0];_y1 = v1[1];_z1 = v1[2];
+    _x0 = v0[0]; _y0 = v0[1]; _z0 = v0[2];
+    _x1 = v1[0]; _y1 = v1[1]; _z1 = v1[2];
+  }
+
+  void
+  baseline::update_parameters()
+  {
     _l  = std::sqrt(dx()*dx()+dy()*dy()+dz()*dz());
     _r  = std::sqrt(dx()*dx()+dy()*dy());
     _pa = std::atan2(-dx(), dy());

@@ -227,6 +227,8 @@ namespace fdlsgm {
     double overlap_length(const dls&) const;
 
     void update_matrix(const dls&);
+    void update_direction();
+    void update_parameters();
   };
 
 
