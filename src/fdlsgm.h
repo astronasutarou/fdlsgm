@@ -23,6 +23,10 @@
 
 
 namespace fdlsgm {
+
+  class dls;
+  class baseline;
+
   /** Two-Dimensional Vector. */
   template <class T> using vector2 = std::array<T, 2>;
 
@@ -53,6 +57,13 @@ namespace fdlsgm {
   /** Calculate Eigen Vectors with the Jacobi algorithm */
   const matrix4x4<double>
   eigenvector_jacobi_4x4(const matrix4x4<double>&);
+
+  /** */
+  typedef std::pair<size_t,dls> ndls;
+
+  /** */
+  typedef std::map<size_t,dls> dlspool;
+
 
   /**
    * @brief Directed Line Segment
@@ -111,17 +122,16 @@ namespace fdlsgm {
     double length() const;
 
     /** Dot product of the two DLSs. */
-    template<class T>
-    double dot(const T&) const;
+    double dot(const dls&) const;
+    double dot(const ndls&) const;
+    double dot(const baseline&) const;
 
     /**
      * @brief Angle between two DLSs in radius
      */
-    template<class T>
-    double argument(const T&) const;
-
-    template<class T>
-    double projected_angle(const T&) const;
+    double argument(const dls&) const;
+    double argument(const ndls&) const;
+    double argument(const baseline&) const;
 
     /** Print function for debugging. */
     void dprint() const;
@@ -133,13 +143,6 @@ namespace fdlsgm {
     const double _l;            /** length */
     const double _pa;           /** position angle */
   };
-
-
-  /** */
-  typedef std::pair<size_t,dls> ndls;
-
-  /** */
-  typedef std::map<size_t,dls> dlspool;
 
 
   class baseline {
@@ -187,19 +190,19 @@ namespace fdlsgm {
 
     size_t size() const;
 
-    template<class T>
-    double dot(const T&) const;
+    double dot(const dls&) const;
+    double dot(const ndls&) const;
+    double dot(const baseline&) const;
 
-    template<class T>
-    double argument(const T&) const;
-
-    template<class T>
-    double projected_angle(const T&) const;
+    double argument(const dls&) const;
+    double argument(const ndls&) const;
+    double argument(const baseline&) const;
 
     double point_distance(const vector3<double>&) const;
 
-    template<class T>
-    double lateral_distance(const T&) const;
+    double lateral_distance(const dls&) const;
+    double lateral_distance(const ndls&) const;
+    double lateral_distance(const baseline&) const;
 
     /** debug function */
     void dprint() const;

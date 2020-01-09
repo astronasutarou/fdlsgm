@@ -156,56 +156,39 @@ namespace fdlsgm {
   const vector3<double>
   baseline::unit_vector() const { return { ex(), ey(), ex() }; }
 
-  template<> double
+  double
   baseline::dot(const dls& dls) const
   {
     return dx()*dls.dx()+dy()*dls.dy()+dz()*dls.dz();
   }
-  template<> double
+  double
   baseline::dot(const ndls& ndls) const
   {
     return dx()*ndls.second.dx()+dy()*ndls.second.dy()+dz()*ndls.second.dz();
   }
-  template<> double
+  double
   baseline::dot(const baseline& bl) const
   {
     return dx()*bl.dx()+dy()*bl.dy()+dz()*bl.dz();
   }
 
 
-  template<> double
+  double
   baseline::argument(const dls& dls) const
   {
     return std::acos(dot(dls)/length()/dls.length());
   }
-  template<> double
+  double
   baseline::argument(const ndls& ndls) const
   {
     return std::acos(dot(ndls.second)/length()/ndls.second.length());
   }
-  template<> double
+  double
   baseline::argument(const baseline& bl) const
   {
     return std::acos(dot(bl)/length()/bl.length());
   }
 
-
-
-  template<> double
-  baseline::projected_angle(const dls& dls) const
-  {
-    return fdlsgm::angle_separation(pa(), dls.pa());
-  }
-  template<> double
-  baseline::projected_angle(const ndls& ndls) const
-  {
-    return fdlsgm::angle_separation(pa(), ndls.second.pa());
-  }
-  template<> double
-  baseline::projected_angle(const baseline& bl) const
-  {
-    return fdlsgm::angle_separation(pa(), bl.pa());
-  }
 
   double
   baseline::point_distance(const vector3<double>& p) const
@@ -225,7 +208,7 @@ namespace fdlsgm {
     return std::sqrt(Cxx+Cyy+Czz+Cxy+Cyz+Czx);
   }
 
-  template<> double
+  double
   baseline::lateral_distance(const dls& dls) const
   {
     const double& Cxx =
@@ -251,10 +234,36 @@ namespace fdlsgm {
           + 6.0*(dls.z0()-z0())*(dls.x0()-x0()) )*ez()*ex()/3.0;
     return std::sqrt((Cxx+Cyy+Czz+Cxy+Cyz+Czx));
   }
-  template<> double
+  double
   baseline::lateral_distance(const ndls& ndls) const
   {
     return lateral_distance(ndls.second);
+  }
+  double
+  baseline::lateral_distance(const baseline& bl) const
+  {
+    const double& Cxx =
+      ( std::pow(bl.x1()-x0(),3.0) - std::pow(bl.x0()-x0(),3.0) )
+      *(1.0-ex()*ex())/(3.0*bl.dx());
+    const double& Cyy =
+      ( std::pow(bl.y1()-y0(),3.0) - std::pow(bl.y0()-y0(),3.0) )
+      *(1.0-ey()*ey())/(3.0*bl.dy());
+    const double& Czz =
+      ( std::pow(bl.z1()-z0(),3.0) - std::pow(bl.z0()-z0(),3.0) )
+      *(1.0-ez()*ez())/(3.0*bl.dz());
+    const double& Cxy =
+      - ( 2.0*bl.dx()*bl.dy()
+          + 3.0*(bl.dy()*(bl.x0()-x0())+bl.dx()*(bl.y0()-y0()))
+          + 6.0*(bl.x0()-x0())*(bl.y0()-y0()) )*ex()*ey()/3.0;
+    const double& Cyz =
+      - ( 2.0*bl.dy()*bl.dz()
+          + 3.0*(bl.dz()*(bl.y0()-y0())+bl.dy()*(bl.z0()-z0()))
+          + 6.0*(bl.y0()-y0())*(bl.z0()-z0()) )*ey()*ez()/3.0;
+    const double& Czx =
+      - ( 2.0*bl.dz()*bl.dx()
+          + 3.0*(bl.dx()*(bl.z0()-z0())+bl.dz()*(bl.x0()-x0()))
+          + 6.0*(bl.z0()-z0())*(bl.x0()-x0()) )*ez()*ex()/3.0;
+    return std::sqrt((Cxx+Cyy+Czz+Cxy+Cyz+Czx));
   }
 
 

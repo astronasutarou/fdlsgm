@@ -52,33 +52,33 @@ namespace fdlsgm {
   const vector3<double>
   dls::unit_vector() const { return { ex(), ey(), ex() }; }
 
-  template<> double
+  double
   dls::dot(const dls& dls) const
   {
     return dx()*dls.dx()+dy()*dls.dy()+dz()*dls.dz();
   }
-  template<> double
+  double
   dls::dot(const ndls& ndls) const
   {
     return dx()*ndls.second.dx()+dy()*ndls.second.dy()+dz()*ndls.second.dz();
   }
-  template<> double
+  double
   dls::dot(const baseline& bl) const
   {
     return dx()*bl.dx()+dy()*bl.dy()+dz()*bl.dz();
   }
 
-  template<> double
+  double
   dls::argument(const dls& dls) const
   {
     return std::acos(dot(dls)/length()/dls.length());
   }
-  template<> double
+  double
   dls::argument(const ndls& ndls) const
   {
     return std::acos(dot(ndls.second)/length()/ndls.second.length());
   }
-  template<> double
+  double
   dls::argument(const baseline& bl) const
   {
     return std::acos(dot(bl)/length()/bl.length());
