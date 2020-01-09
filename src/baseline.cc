@@ -94,6 +94,10 @@ namespace fdlsgm {
   }
 
 
+  baseline::baseline():
+    _x0(0.0),_y0(0.0),_z0(0.0),_x1(0.0),_y1(0.0),_z1(0.0),
+    _pa(0.0),_r(0.0),_l(0.0),_ncx(0.0),_ncy(0.0),_ncz(0.0),_f(zeros4x4)
+  {}
   baseline::baseline(const ndls& ndls):
     _x0(ndls.second.x0()),_y0(ndls.second.y0()),_z0(ndls.second.z0()),
     _x1(ndls.second.x1()),_y1(ndls.second.y1()),_z1(ndls.second.z1()),
@@ -103,6 +107,15 @@ namespace fdlsgm {
   {
     _elements.insert(ndls.first);
   }
+  baseline::baseline(const baseline& other):
+    _x0(other.x0()),_y0(other.y0()),_z0(other.z0()),
+    _x1(other.x1()),_y1(other.y1()),_z1(other.z1()),
+    _pa(other.pa()),_r(other.radius()),_l(other.length()),
+    _ncx(other.cx()),_ncy(other.cy()),_ncz(other.cz()),_f(other._f)
+  {
+    for (auto& e: other._elements) _elements.insert(e);
+  }
+
 
   bool
   baseline::append(const ndls& ndls)

@@ -154,7 +154,9 @@ namespace fdlsgm {
      * @brief Constuct a baseline.
      * @param[in] dls: a pair of (size_t, DLS)
      */
+    baseline();
     baseline(const ndls&);
+    baseline(const baseline&);
 
     bool append(const ndls&);
 
