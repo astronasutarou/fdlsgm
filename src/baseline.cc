@@ -314,7 +314,8 @@ namespace fdlsgm {
     printf("#\tPosition Angle: %lf\n", pa()*180.0/M_PI);
     printf("#\tLength        : %lf\n", length());
     printf("#\tRadius        : %lf\n", radius());
-    printf("#\tVertices      : [ ");
+    printf("#\tSize          : %ld\n", size());
+    printf("#\tMembers       : [ ");
     for (auto& n: _elements) printf("%ld ", n);  printf("]\n");
     printf("%3ld %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf",
            (size_t)0, x0(), y0(), z0(), x1(), y1(), z1());
