@@ -97,8 +97,9 @@ namespace fdlsgm {
   baseline::baseline(const ndls& ndls):
     _x0(ndls.second.x0()),_y0(ndls.second.y0()),_z0(ndls.second.z0()),
     _x1(ndls.second.x1()),_y1(ndls.second.y1()),_z1(ndls.second.z1()),
-    _pa(ndls.second.pa()), _r(ndls.second.radius()), _l(ndls.second.length()),
-    _ndx(ndls.second.dx()), _ndy(ndls.second.dy()), _f(zeros4x4)
+    _pa(ndls.second.pa()),_r(ndls.second.radius()),_l(ndls.second.length()),
+    _ncx(ndls.second.cx()),_ncy(ndls.second.cy()),_ncz(ndls.second.cz()),
+    _f(zeros4x4)
   {
     _elements.insert(ndls.first);
   }
@@ -112,6 +113,8 @@ namespace fdlsgm {
       return false;
     } else {
       _elements.insert(n);
+      _ncx += e.cx(); _ncy += e.cy(); _ncz += e.cz();
+
       if (root_position(e.vertices()[0]) < 0.0) {
         _x0 = e.x0(); _y0 = e.y0(); _z0 = e.z0();
         _l  = std::sqrt(dx()*dx()+dy()*dy()+dz()*dz());
@@ -132,6 +135,9 @@ namespace fdlsgm {
   double baseline::x1() const { return _x1; }
   double baseline::y1() const { return _y1; }
   double baseline::z1() const { return _z1; }
+  double baseline::cx() const { return _ncx/size(); }
+  double baseline::cy() const { return _ncy/size(); }
+  double baseline::cz() const { return _ncz/size(); }
   double baseline::dx() const { return _x1-_x0; }
   double baseline::dy() const { return _y1-_y0; }
   double baseline::dz() const { return _z1-_z0; }

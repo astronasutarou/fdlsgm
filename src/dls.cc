@@ -30,6 +30,9 @@ namespace fdlsgm {
   double dls::x1() const { return _x1; }
   double dls::y1() const { return _y1; }
   double dls::z1() const { return _z1; }
+  double dls::cx() const { return (_x1+_x0)/2.0; }
+  double dls::cy() const { return (_y1+_y0)/2.0; }
+  double dls::cz() const { return (_z1+_z0)/2.0; }
   double dls::dx() const { return _x1-_x0; }
   double dls::dy() const { return _y1-_y0; }
   double dls::dz() const { return _z1-_z0; }

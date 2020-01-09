@@ -92,6 +92,9 @@ namespace fdlsgm {
     double x1() const; /** x-coordinate of the second vertex */
     double y1() const; /** y-coordinate of the second vertex */
     double z1() const; /** z-coordinate of the second vertex */
+    double cx() const; /** x-coordinate of the DLS center */
+    double cy() const; /** y-coordinate of the DLS center */
+    double cz() const; /** z-coordinate of the DLS center */
     double dx() const; /** difference in x-coordinates */
     double dy() const; /** difference in y-coordinates */
     double dz() const; /** difference in z-coordinates */
@@ -161,6 +164,9 @@ namespace fdlsgm {
     double x1() const; /** x-coordinate of the second vertex */
     double y1() const; /** y-coordinate of the second vertex */
     double z1() const; /** z-coordinate of the second vertex */
+    double cx() const; /** x-coordinate of the baseline center */
+    double cy() const; /** y-coordinate of the baseline center */
+    double cz() const; /** z-coordinate of the baseline center */
     double dx() const; /** difference in x-coordinates */
     double dy() const; /** difference in y-coordinates */
     double dz() const; /** difference in z-coordinates */
@@ -209,7 +215,7 @@ namespace fdlsgm {
   private:
     std::set<size_t> _elements;
     double _x0,_y0,_z0,_x1,_y1,_z1;
-    double _pa, _r, _l, _ndx, _ndy;
+    double _pa, _r, _l, _ncx, _ncy, _ncz;
     matrix4x4<double> _f;
 
     double root_position(const vector3<double>&) const;
