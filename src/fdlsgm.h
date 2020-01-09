@@ -92,7 +92,7 @@ namespace fdlsgm {
     const segment<double> vertices() const;
 
     /** unit vector */
-    const vector3<double> unit() const;
+    const vector3<double> unit_vector() const;
 
     /**
      * @brief Position Angle of the DLS in radian.
@@ -169,7 +169,7 @@ namespace fdlsgm {
     const segment<double> vertices() const;
 
     /** unit vector */
-    const vector3<double> unit() const;
+    const vector3<double> unit_vector() const;
 
     /**
      * @brief Position Angle of the DLS.

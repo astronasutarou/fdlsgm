@@ -24,14 +24,14 @@ namespace fdlsgm {
   }
 
   const vector2<double>
-  unit_vector(const vector2<double>& v)
+  normalize(const vector2<double>& v)
   {
     double n = std::sqrt(v[0]*v[0]+v[1]*v[1]);
     return { v[0]/n, v[1]/n };
   }
 
   const vector3<double>
-  unit_vector(const vector3<double>& v)
+  normalize(const vector3<double>& v)
   {
     double n = std::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
     return { v[0]/n, v[1]/n, v[2]/n };
@@ -154,7 +154,7 @@ namespace fdlsgm {
   }
 
   const vector3<double>
-  baseline::unit() const { return { ex(), ey(), ex() }; }
+  baseline::unit_vector() const { return { ex(), ey(), ex() }; }
 
   template<> double
   baseline::dot(const dls& dls) const
@@ -338,7 +338,7 @@ namespace fdlsgm {
     auto& eigen = eigenvector_jacobi_4x4(_f);
     auto& n0 = eigen[0];
     auto& n1 = eigen[1];
-    const auto& d = unit_vector(outer_product(n0, n1));
+    const auto& d = normalize(outer_product(n0, n1));
     const vector3<double>& p =
       { (x0()+x1())/2.0, (y0()+y1())/2.0, (z0()+z1())/2.0 };
 

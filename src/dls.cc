@@ -50,7 +50,7 @@ namespace fdlsgm {
   }
 
   const vector3<double>
-  dls::unit() const { return { ex(), ey(), ex() }; }
+  dls::unit_vector() const { return { ex(), ey(), ex() }; }
 
   template<> double
   dls::dot(const dls& dls) const
