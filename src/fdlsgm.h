@@ -217,6 +217,9 @@ namespace fdlsgm {
 
     /** debug function */
     void dprint() const;
+
+    friend const baseline
+    merge_baseline(const baseline&, const baseline&);
   private:
     std::set<size_t> _elements;
     double _x0,_y0,_z0,_x1,_y1,_z1;

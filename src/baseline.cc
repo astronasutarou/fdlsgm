@@ -393,4 +393,23 @@ namespace fdlsgm {
     _pa = std::atan2(-dx(), dy());
   }
 
+
+  const baseline
+  merge_baseline(const baseline& b0, const baseline& b1)
+  {
+    baseline merged;
+    merged._x0 = (b0.x0()+b1.x0())/2.0; merged._x1 = (b0.x1()+b1.x1())/2.0;
+    merged._y0 = (b0.y0()+b1.y0())/2.0; merged._y1 = (b0.y1()+b1.y1())/2.0;
+    merged._z0 = (b0.z0()+b1.z0())/2.0; merged._z1 = (b0.z1()+b1.z1())/2.0;
+    for (size_t i=0; i<4; i++)
+      for (size_t j=0; j<4; j++)
+        merged._f[i][j] = b0._f[i][j] + b1._f[i][j];
+    for (auto& e: b0._elements) merged._elements.insert(e);
+    for (auto& e: b1._elements) merged._elements.insert(e);
+    merged._ncx = b0._ncx + b1._ncx;
+    merged._ncy = b0._ncy + b1._ncy;
+    merged._ncz = b0._ncz + b1._ncz;
+    merged.update_parameters();
+    return merged;
+  }
 }
