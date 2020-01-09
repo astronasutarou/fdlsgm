@@ -7,11 +7,11 @@ HEADER := src/fdlsgm.h
 SOURCE := $(wildcard src/*.cc)
 OBJECT := $(patsubst %.cc,%.o,$(SOURCE))
 
-.PHONY: clean test
+.PHONY: clean
 
-all: test
+all: test/sample
 
-test: test.cc $(OBJECT) $(HEADER)
+test/sample: test/sample.cc $(OBJECT) $(HEADER)
 	$(CXX) -o $@ $< $(OBJECT)
 
 .cc.o: $(HEADER)
