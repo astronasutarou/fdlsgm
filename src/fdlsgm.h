@@ -232,24 +232,24 @@ namespace fdlsgm {
     const size_t count_baseline() const;
 
     void insert(const dls& dls,
-                const double& arg_limit0 = 10.0*M_PI/180.0,
+                const double& arg_limit0 = 30.0*M_PI/180.0,
                 const double& arg_limitL = 10.0*M_PI/180.0,
-                const double& dist_limit = 1.0,
+                const double& dist_limit = 3.0,
                 const double& gap_limit  = 0.5,
-                const index_t& range      = 5);
+                const index_t& range     = 5);
 
-    void reallocate(const double& arg_limit0 = 10.0*M_PI/180.0,
+    void reallocate(const double& arg_limit0 = 30.0*M_PI/180.0,
                     const double& arg_limitL = 10.0*M_PI/180.0,
-                    const double& dist_limit = 1.0,
+                    const double& dist_limit = 3.0,
                     const double& gap_limit  = 0.5,
-                    const index_t& range      = 5);
+                    const index_t& range     = 5);
 
-    void coalesce(const double& arg_limit0 = 5.0*M_PI/180.0,
+    void coalesce(const double& arg_limit0 = 10.0*M_PI/180.0,
                   const double& arg_limitL = 10.0*M_PI/180.0,
-                  const double& dist_limit = 0.5,
+                  const double& dist_limit = 1.0,
                   const double& gap_limit  = 0.5,
                   const size_t& drop_limit = 3,
-                  const index_t& range      = 5);
+                  const index_t& range     = 5);
 
     /** debug function */
     void dprint(const size_t& limit = 0) const;
@@ -326,9 +326,8 @@ namespace fdlsgm {
           const double l = b.lateral_distance(dls);
           if (l < dist_limit) {
             if (DEBUG_MESSAGE) {
-              printf("# match[%04lx]"
-                     "(%6.4lf,%6.4f,%6.4f,%6.4f,%6.4f,%6.4f)\n",
-                     n,d,l,g,arg_limit,dist_limit,gap_limit);
+              printf("# match[%04lx:%04lx] (%6.4lf,%6.4f,%6.4f)\n",
+                     idx,n,d/arg_limit,l/dist_limit,g/gap_limit);
             }
             drop(index(b.pa()), n);
             b.append(idx, dls);
@@ -415,9 +414,10 @@ namespace fdlsgm {
             const double l = b.lateral_distance(x);
             if (l < dist_limit) {
               if (DEBUG_MESSAGE) {
-                printf("# merge[%04lx]"
-                       "(%6.4lf,%6.4f,%6.4f,%6.4f,%6.4f,%6.4f)\n",
-                       n,d,l,g,arg_limit,dist_limit,gap_limit);
+                printf("# merge[%04lx] "
+                       "(%6.4lf,%6.4f,%6.4f) [%ld+%ld]\n",
+                       n,d/arg_limit,l/dist_limit,g/gap_limit,
+                       b.size(),x.size());
               }
               drop(index(x.pa()), n);
               b = merge_baseline(b,x);
@@ -514,9 +514,23 @@ namespace fdlsgm {
     printf("## N(segment)  : %ld\n\n\n", count_segment());
     printf("## baselines\n");
     size_t cnt(0);
+    size_t z = (size_t)&_baselines[0];
     for (auto& b: _baselines) {
       if (b.size()>=limit) {
         b.dprint(); cnt++;
+        if (DEBUG_MESSAGE) {
+          for (auto& x: _baselines) {
+            if (x.size()>=limit) {
+              const double d = b.argument(x);
+              const double l = b.lateral_distance(x);
+              const double g = b.gap_length(x);
+              const double w = b.overlap_length(x);
+              printf("#\t[%04lx]<->[%04lx] "
+                     "(d,l,g,w) = (%12.6lf, %12.6lf, %12.6lf %12.6f)\n",
+                     (size_t)&b-z,(size_t)&x-z,d,l,g,w);
+            }
+          }
+        }
       }
     }
     printf("## N(baseline): %ld\n", count_baseline());

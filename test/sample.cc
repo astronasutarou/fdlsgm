@@ -14,8 +14,8 @@ main(int argn, char** argv)
   clock_t t = clock();
   std::mt19937 gen; gen.seed(t);
   std::uniform_real_distribution<double> location(-1000.0, 1000.0);
-  std::normal_distribution<double> velocity(0.0, 15.0);
-  std::normal_distribution<double> scatter(0.0, 0.1);
+  std::normal_distribution<double> velocity(0.0, 10.0);
+  std::normal_distribution<double> scatter(0.0, 0.5);
 
   const size_t n_elem       = 10;
   const size_t n_group      = 50;
@@ -58,7 +58,7 @@ main(int argn, char** argv)
   clock_t tic1 = clock();
   accumul.coalesce();
   clock_t tic2 = clock();
-  accumul.dprint(8);
+  accumul.dprint(5);
   printf("## initialize: %lf sec\n", ((double)tic0-begin)/CLOCKS_PER_SEC);
   printf("## reallocate: %lf sec\n", ((double)tic1-tic0)/CLOCKS_PER_SEC);
   printf("## coalesce  : %lf sec\n", ((double)tic2-tic1)/CLOCKS_PER_SEC);
