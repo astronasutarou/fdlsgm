@@ -1,6 +1,6 @@
 CC     := g++
 LIBS   := -I./src -L./src -lm
-CFLAGS := -std=c++11 -g -Wall
+CFLAGS := -std=c++11 -g -Wall -O2
 CXX    := $(CC) $(LIBS) $(CFLAGS)
 
 HEADER := src/fdlsgm.h src/linalg.h
