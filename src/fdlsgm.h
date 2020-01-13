@@ -200,6 +200,9 @@ namespace fdlsgm {
     double gap_length(const dls& dls) const;
     double gap_length(const baseline& baseline) const;
 
+    double overlap_length(const dls& dls) const;
+    double overlap_length(const baseline& baseline) const;
+
     /** debug function */
     void dprint() const;
 
@@ -212,7 +215,6 @@ namespace fdlsgm {
     matrix4x4<double> _f;
 
     double root_position(const vector3<double>& v) const;
-    double overlap_length(const dls& dls) const;
 
     void update_matrix(const dls& dls);
     void update_direction();

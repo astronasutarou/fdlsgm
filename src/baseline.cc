@@ -219,6 +219,35 @@ namespace fdlsgm {
     return (t1<0.0)?-t1:(t0>1.0)?t0-1.0:0.0;
   }
 
+  double
+  baseline::overlap_length(const dls& dls) const
+  {
+    const auto& v = dls.vertices();
+    const auto& v0 = v[0];
+    const auto& v1 = v[1];
+    double t0 = root_position(v0), t1 = root_position(v1);
+    if (t1<t0) std::swap(t0,t1);
+    if (t1< 0.0 || t0> 1.0) return 0.0;
+    if (t0< 0.0 && t1>=0.0) return t1-0.0;
+    if (t0>=0.0 && t1> 1.0) return 1.0-t0;
+    if (t0> 0.0 && t1< 1.0) return t1-t0;
+    return 1.0;
+  }
+  double
+  baseline::overlap_length(const baseline& bl) const
+  {
+    const auto& v = bl.vertices();
+    const auto& v0 = v[0];
+    const auto& v1 = v[1];
+    double t0 = root_position(v0), t1 = root_position(v1);
+    if (t1<t0) std::swap(t0,t1);
+    if (t1< 0.0 || t0> 1.0) return 0.0;
+    if (t0< 0.0 && t1>=0.0) return t1-0.0;
+    if (t0>=0.0 && t1> 1.0) return 1.0-t0;
+    if (t0> 0.0 && t1< 1.0) return t1-t0;
+    return 1.0;
+  }
+
   void
   baseline::dprint() const
   {
@@ -246,19 +275,6 @@ namespace fdlsgm {
     return ((v[0]-x0())*ex()+(v[1]-y0())*ey()+(v[2]-z0())*ez())/length();
   }
 
-  double
-  baseline::overlap_length(const dls& dls) const
-  {
-    auto& v0 = dls.vertices()[0];
-    auto& v1 = dls.vertices()[1];
-    double t0 = root_position(v0), t1 = root_position(v1);
-    if (t1<0.0 || t0>1.0) return 0.0;
-    if (t0<0.0 && t1>1.0) return 1.0;
-    if (t0<0.0 && t1>0.0) return -t0;
-    if (t0>0.0 && t1<1.0) return t1-t0;
-    if (t0>0.0 && t1>1.0) return 1.0-t0;
-    throw std::invalid_argument("something wrong");
-  }
 
   void
   baseline::update_matrix(const dls& dls)
