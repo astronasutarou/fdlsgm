@@ -217,15 +217,39 @@ namespace fdlsgm {
   template <index_t N>
   class accumulator {
   public:
+    accumulator();
+    accumulator(const size_t& reserve);
 
-    const size_t count_dls() const;
+    const size_t count_segment() const;
     const size_t count_baseline() const;
 
-    void insert(const dls& dls, const bool& allow_create = false);
+    void insert(const dls& dls,
+                const double& arg_limit0 = 10.0*M_PI/180.0,
+                const double& arg_limitL = 10.0*M_PI/180.0,
+                const double& dist_limit = 1.0,
+                const double& gap_limit  = 0.5,
+                const size_t& range      = 5);
+
+    void reallocate(const double& arg_limit0 = 10.0*M_PI/180.0,
+                    const double& arg_limitL = 10.0*M_PI/180.0,
+                    const double& dist_limit = 1.0,
+                    const double& gap_limit  = 0.5,
+                    const size_t& range      = 5);
+
+    void coalesce(const double& arg_limit0 = 5.0*M_PI/180.0,
+                  const double& arg_limitL = 10.0*M_PI/180.0,
+                  const double& dist_limit = 0.5,
+                  const double& gap_limit  = 0.5,
+                  const size_t& drop_limit = 3,
+                  const size_t& range      = 5);
+
+    /** debug function */
+    void dprint(const size_t& limit = 0) const;
+
     const baseline& operator[](const index_t& n) const;
   private:
     const double tics = 2.0*M_PI/N;
-    std::vector<dls> _segments;
+    std::vector<dls> _elements;
     std::vector<baseline> _baselines;
     std::unordered_multimap<index_t, index_t> _connector;
 
@@ -234,20 +258,29 @@ namespace fdlsgm {
     void push(const index_t& dls_index, const dls& dls);
     void push(const baseline& baseline);
 
-    void append(const index_t& baseline_index, const index_t& dls_index);
-
     std::list<index_t> pop (const index_t& pa_index, const index_t& range);
     std::list<index_t> pop (const double& pa, const index_t& range);
 
     const index_t index(const double& pa) const;
   };
 
+  template<index_t N>
+  accumulator<N>::accumulator():
+    accumulator(1000)
+  {}
+  template<index_t N>
+  accumulator<N>::accumulator(const size_t& reserve)
+  {
+    _elements.reserve(reserve);
+    _baselines.reserve(reserve);
+  }
+
 
   template<index_t N>
   const size_t
-  accumulator<N>::count_dls() const
+  accumulator<N>::count_segment() const
   {
-    return _segments.size();
+    return _elements.size();
   }
 
   template<index_t N>
@@ -260,31 +293,123 @@ namespace fdlsgm {
   template<index_t N>
   void
   accumulator<N>::insert(const dls& dls,
-                         const bool& allow_create)
+                         const double& arg_limit0,
+                         const double& arg_limitL,
+                         const double& dist_limit,
+                         const double& gap_limit,
+                         const size_t& range)
   {
-    constexpr double arg_lim = 60.0*M_PI/180.0;
-    constexpr double dist_lim = 3.0;
-    constexpr double gap_lim = 0.5;
-    constexpr size_t range = 2;
-
-    _segments.push_back(dls);
-    const index_t idx = _segments.size()-1;
+    _elements.push_back(dls);
+    const index_t idx = _elements.size()-1;
     const double pa = dls.pa();
     const auto& baseline_index = pop(pa, range);
-    bool inserted = false;
+    bool appended = false;
+
     for (auto& n: baseline_index) {
       baseline& b = _baselines[n];
+      const double arg_limit = arg_limit0 + arg_limitL/std::sqrt(b.length());
       const double d = b.argument(dls);
       const double l = b.lateral_distance(dls);
       const double g = b.gap_length(dls);
-      if ( d < arg_lim && l < dist_lim && g < gap_lim) {
-        printf("# matched with [%08lx] (%6.4lf,%6.4f)\n",(size_t)&b,d,l);
-        inserted = true;
+      if ( d < arg_limit && l < dist_limit && g < gap_limit) {
+        if (DEBUG_MESSAGE) {
+          printf("# match[%04lx] (%6.4lf,%6.4f,%6.4f,%6.4f,%6.4f,%6.4f)\n",
+                 n,d,l,g,arg_limit,dist_limit,gap_limit);
+        }
         b.append(idx, dls);
+        appended = true;
       }
+      const index_t pa_idx = index(b.pa());
+      _connector.emplace(pa_idx, n);
     }
-    if (!inserted) push(idx, dls);
+    if (!appended) {
+      push(idx, dls);
+    }
   }
+
+  template<index_t N>
+  void
+  accumulator<N>::reallocate(const double& arg_limit0,
+                             const double& arg_limitL,
+                             const double& dist_limit,
+                             const double& gap_limit,
+                             const size_t& range)
+  {
+    bool updated = false;
+    size_t counter(0);
+    const size_t n_elements = count_segment();
+    while (true) {
+      for (size_t idx=0; idx<n_elements; idx++) {
+        const auto& dls = _elements[idx];
+        const auto& baseline_index = pop(dls.pa(), range);
+        // printf("## popped size: %ld\n", baseline_index.size());
+        for (auto& n: baseline_index) {
+          baseline& b = _baselines[n];
+          const double arg_limit = arg_limit0
+            + arg_limitL/std::sqrt(b.length());
+          const double d = b.argument(dls);
+          const double l = b.lateral_distance(dls);
+          const double g = b.gap_length(dls);
+          if ( d < arg_limit && l < dist_limit && g < gap_limit) {
+            updated |= b.append(idx, dls);
+          }
+          const index_t pa_idx = index(b.pa());
+          _connector.emplace(pa_idx, n);
+        }
+      }
+      if (!updated) break;
+      updated = false; counter++;
+    }
+    printf("## reallocate: %ld\n", counter);
+  }
+
+  template<index_t N>
+  void
+  accumulator<N>::coalesce(const double& arg_limit0,
+                           const double& arg_limitL,
+                           const double& dist_limit,
+                           const double& gap_limit,
+                           const size_t& drop_limit,
+                           const size_t& range)
+  {
+    std::set<index_t> done;
+    std::vector<baseline> tmp_baseline;
+    std::unordered_multimap<index_t, index_t> tmp_connector;
+    const index_t n_elements = count_baseline();
+    tmp_baseline.reserve(n_elements);
+    for (index_t i=0; i<n_elements; i++) {
+      if (done.find(i) != done.end()) continue;
+      done.insert(i);
+      baseline b(_baselines[i]);
+      const auto& baseline_index = pop(b.pa(), range);
+      for (auto& n: baseline_index) {
+        const baseline& x = _baselines[n];
+        if (i==n || done.find(n) != done.end()) continue;
+        if (x.size() < drop_limit) { done.insert(n); continue; }
+        const double arg_limit = arg_limit0
+          + arg_limitL/std::sqrt(x.length());
+        const double d = b.argument(x);
+        const double l = b.lateral_distance(x);
+        const double g = b.gap_length(x);
+        if ( d < arg_limit && l < dist_limit && g < gap_limit) {
+          if (DEBUG_MESSAGE) {
+            printf("# merge[%04lx] (%6.4lf,%6.4f,%6.4f,%6.4f,%6.4f,%6.4f)\n",
+                   n,d,l,g,arg_limit,dist_limit,gap_limit);
+          }
+          b = merge_baseline(b,x);
+          done.insert(n);
+        } else {
+          _connector.emplace(index(x.pa()), n);
+        }
+      }
+      tmp_baseline.push_back(b);
+      const index_t idx = tmp_baseline.size()-1;
+      tmp_connector.emplace(b.pa(), idx);
+    }
+    _baselines = tmp_baseline;
+    _connector = tmp_connector;
+  }
+
 
   template<index_t N>
   const baseline&
@@ -318,18 +443,6 @@ namespace fdlsgm {
   }
 
   template<index_t N>
-  void
-  accumulator<N>::append(const index_t& baseline_index,
-                         const index_t& dls_index)
-  {
-    baseline& bl = get(baseline_index);
-    const dls& dls = _segments[dls_index];
-    bl.append(dls_index, dls);
-    const index_t pa_idx = index(bl.pa());
-    _connector.emplace(pa_idx, baseline_index);
-  }
-
-  template<index_t N>
   std::list<index_t>
   accumulator<N>::pop(const index_t& pa_index, const index_t& range)
   {
@@ -338,6 +451,7 @@ namespace fdlsgm {
       auto iter = _connector.equal_range(i);
       for_each(iter.first, iter.second,
                [&ret](const connector& x){ ret.push_back(x.second); });
+      _connector.erase(i);
     }
     return ret;
   }
@@ -352,7 +466,25 @@ namespace fdlsgm {
   const index_t
   accumulator<N>::index(const double& argument) const
   {
-    return ((index_t)std::floor(argument/tics))%360;
+    return ((index_t)std::floor(argument/tics)+N)%N;
+  }
+
+  template<index_t N>
+  void
+  accumulator<N>::dprint(const size_t& limit) const
+  {
+    printf("## segments\n");
+    for (auto& e: _elements) e.dprint();
+    printf("## N(segment)  : %ld\n\n\n", count_segment());
+    printf("## baselines\n");
+    size_t cnt(0);
+    for (auto& b: _baselines) {
+      if (b.size()>=limit) {
+        b.dprint(); cnt++;
+      }
+    }
+    printf("## N(baseline): %ld\n", count_baseline());
+    printf("## N(extract) : %ld\n\n", cnt);
   }
 }
 
