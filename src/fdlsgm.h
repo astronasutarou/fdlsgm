@@ -15,6 +15,7 @@
 #include<limits>
 #include<array>
 #include<set>
+#include<queue>
 #include<map>
 #include<unordered_map>
 #include<algorithm>
@@ -44,6 +45,7 @@ namespace fdlsgm {
   template <class T> using segment = std::array<vector3<T>, 2>;
 
   /** */
+  typedef std::pair<index_t,index_t> connector;
 
   /**
    * @brief Directed Line Segment
@@ -210,13 +212,108 @@ namespace fdlsgm {
   };
 
 
+  template <index_t N>
   class accumulator {
   public:
+
+    void insert(const dls& dls, const bool& allow_create = false);
+    const baseline& operator[](const index_t& n) const;
   private:
-    size_t _nsize;
-    std::multimap<size_t, baseline> _array;
+    const double tics = 2.0*M_PI/N;
+    std::vector<dls> _segments;
+    std::vector<baseline> _baselines;
+    std::unordered_multimap<index_t, index_t> _connector;
+
+    baseline& get(const index_t& n) const;
+
+    void push(const dls& dls);
+    void push(const baseline& baseline);
+
+    void append(const index_t& baseline_index, const index_t& dls_index);
+
+    std::queue<index_t> pop (const index_t& pa_index, const index_t& range);
+    std::queue<index_t> pop (const double& pa, const index_t& range);
+
+    const index_t index(const double& pa) const;
   };
 
+  template<index_t N>
+  const baseline&
+  accumulator<N>::operator[](const index_t& n) const
+  {
+    return _baselines[n];
+  }
+
+  template<index_t N>
+  void
+  accumulator<N>::insert(const dls& dls,
+                         const bool& allow_create)
+  {
+    _segments.push_back(dls);
+    const index_t idx = _segments.size()-1;
+  }
+
+  template<index_t N>
+  baseline&
+  accumulator<N>::get(const index_t& n) const
+  {
+    return _baselines[n];
+  }
+
+  template<index_t N>
+  void
+  accumulator<N>::push(const dls& dls)
+  {
+    baseline bl(dls);
+    push(bl);
+  }
+  template<index_t N>
+  void
+  accumulator<N>::push(const baseline& bl)
+  {
+    const index_t pa_idx = index(bl.pa());
+    _baselines.push_back(bl);
+    const index_t bl_idx = _baselines.size()-1;
+    _connector.emplace(pa_idx, bl_idx);
+  }
+
+  template<index_t N>
+  void
+  accumulator<N>::append(const index_t& baseline_index,
+                         const index_t& dls_index)
+  {
+    baseline& bl = get(baseline_index);
+    const dls& dls = _segments[dls_index];
+    bl.append(dls_index, dls);
+    const index_t pa_idx = index(bl.pa());
+    _connector.emplace(pa_idx, baseline_index);
+  }
+
+  template<index_t N>
+  std::queue<index_t>
+  accumulator<N>::pop(const index_t& pa_index, const index_t& range)
+  {
+    std::queue<index_t> ret;
+    for (index_t i=pa_index-range; i<pa_index+range; i++) {
+      auto iter = _connector.equal_range(i);
+      for_each(iter.first, iter.second,
+               [&ret](const connector& x){ ret.push(x.second); });
+    }
+    return ret;
+  }
+  template<index_t N>
+  std::queue<index_t>
+  accumulator<N>::pop(const double& pa, const index_t& range)
+  {
+    return pop(index(pa), range);
+  }
+
+  template<index_t N>
+  const index_t
+  accumulator<N>::index(const double& argument) const
+  {
+    return ((index_t)std::floor(argument/tics))%360;
+  }
 }
 
 #endif // __FDLSGM_H_INCLUDE
