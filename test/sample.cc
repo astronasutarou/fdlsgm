@@ -14,8 +14,8 @@ main(int argn, char** argv)
   clock_t t = clock();
   std::mt19937 gen; gen.seed(t);
   std::uniform_real_distribution<double> location(-1000.0, 1000.0);
-  std::normal_distribution<double> velocity(0.0, 10.0);
-  std::normal_distribution<double> scatter(0.0, 0.5);
+  std::normal_distribution<double> velocity(0.0, 2.0);
+  std::normal_distribution<double> scatter(0.0, 0.1);
 
   const size_t n_elem       = 10;
   const size_t n_group      = 50;
@@ -40,8 +40,8 @@ main(int argn, char** argv)
     const double y = location(gen);
     for (size_t ie=0; ie<n_elem; ie++) {
       const double z = (double)ie;
-      const double x1 = scatter(gen), y1 = scatter(gen);
-      const double x2 = scatter(gen), y2 = scatter(gen);
+      const double x1 = 5*scatter(gen), y1 = 5*scatter(gen);
+      const double x2 = 5*scatter(gen), y2 = 5*scatter(gen);
       accumul.insert(fdlsgm::dls({x1+x,y1+y,z},{x2+x,y2+y,z+1}));
     }
   }
