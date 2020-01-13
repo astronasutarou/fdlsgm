@@ -1,15 +1,14 @@
 /**
- * @file linalg.cc
+ * @file jacobi.cc
  * @brief Singular Value Decomposition with Jacobi algorithm
  * @author Ryou Ohsawa
  * @year 2020
  */
-#include "fdlsgm.h"
+#include "linalg.h"
 
 
-namespace fdlsgm {
+namespace linalg {
 
-  typedef signed long int index_t;
   constexpr index_t matrix_size = 4;
   constexpr index_t max_iter = 2e3;
 
