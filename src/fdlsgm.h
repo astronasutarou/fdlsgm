@@ -258,8 +258,10 @@ namespace fdlsgm {
     void push_baseline(const index_t& dls_index, const dls& dls);
     void push_baseline(const baseline& baseline);
 
-    std::list<index_t> pop (const index_t& pa_index, const index_t& range);
-    std::list<index_t> pop (const double& pa, const index_t& range);
+    std::list<index_t> pop(const index_t& pa_index, const index_t& range);
+    std::list<index_t> pop(const double& pa, const index_t& range);
+
+    void drop(const index_t& pa_index, const index_t& baseline_index);
 
     const index_t index(const double& pa) const;
   };
@@ -310,18 +312,23 @@ namespace fdlsgm {
       baseline& b = _baselines[n];
       const double arg_limit = arg_limit0 + arg_limitL/std::sqrt(b.length());
       const double d = b.argument(dls);
-      const double l = b.lateral_distance(dls);
-      const double g = b.gap_length(dls);
-      if ( d < arg_limit && l < dist_limit && g < gap_limit) {
-        if (DEBUG_MESSAGE) {
-          printf("# match[%04lx] (%6.4lf,%6.4f,%6.4f,%6.4f,%6.4f,%6.4f)\n",
-                 n,d,l,g,arg_limit,dist_limit,gap_limit);
+      if (d < arg_limit) {
+        const double g = b.gap_length(dls);
+        if (g < gap_limit) {
+          const double l = b.lateral_distance(dls);
+          if (l < dist_limit) {
+            if (DEBUG_MESSAGE) {
+              printf("# match[%04lx]"
+                     "(%6.4lf,%6.4f,%6.4f,%6.4f,%6.4f,%6.4f)\n",
+                     n,d,l,g,arg_limit,dist_limit,gap_limit);
+            }
+            drop(index(b.pa()), n);
+            b.append(idx, dls);
+            appended = true;
+            _connector.emplace(index(b.pa()), n);
+          }
         }
-        b.append(idx, dls);
-        appended = true;
       }
-      const index_t pa_idx = index(b.pa());
-      _connector.emplace(pa_idx, n);
     }
     if (!appended) {
       push_baseline(idx, dls);
@@ -343,25 +350,29 @@ namespace fdlsgm {
       for (index_t idx=0; idx<n_elements; idx++) {
         const auto& dls = _elements[idx];
         const auto& baseline_index = pop(dls.pa(), range);
+
         // printf("## popped size: %ld\n", baseline_index.size());
         for (auto& n: baseline_index) {
           baseline& b = _baselines[n];
           const double arg_limit = arg_limit0
             + arg_limitL/std::sqrt(b.length());
           const double d = b.argument(dls);
-          const double l = b.lateral_distance(dls);
-          const double g = b.gap_length(dls);
-          if ( d < arg_limit && l < dist_limit && g < gap_limit) {
-            updated |= b.append(idx, dls);
+          if (d < arg_limit) {
+            const double g = b.gap_length(dls);
+            if (g < gap_limit) {
+              const double l = b.lateral_distance(dls);
+              if (l < dist_limit) {
+                drop(index(b.pa()), n);
+                updated |= b.append(idx, dls);
+                _connector.emplace(index(b.pa()), n);
+              }
+            }
           }
-          const index_t pa_idx = index(b.pa());
-          _connector.emplace(pa_idx, n);
         }
       }
       if (!updated) break;
       updated = false; counter++;
     }
-    printf("## reallocate: %ld\n", counter);
   }
 
   template<index_t N>
@@ -390,17 +401,21 @@ namespace fdlsgm {
         const double arg_limit = arg_limit0
           + arg_limitL/std::sqrt(x.length());
         const double d = b.argument(x);
-        const double l = b.lateral_distance(x);
-        const double g = b.gap_length(x);
-        if ( d < arg_limit && l < dist_limit && g < gap_limit) {
-          if (DEBUG_MESSAGE) {
-            printf("# merge[%04lx] (%6.4lf,%6.4f,%6.4f,%6.4f,%6.4f,%6.4f)\n",
-                   n,d,l,g,arg_limit,dist_limit,gap_limit);
+        if (d < arg_limit) {
+          const double g = b.gap_length(x);
+          if (g < gap_limit) {
+            const double l = b.lateral_distance(x);
+            if (l < dist_limit) {
+              if (DEBUG_MESSAGE) {
+                printf("# merge[%04lx]"
+                       "(%6.4lf,%6.4f,%6.4f,%6.4f,%6.4f,%6.4f)\n",
+                       n,d,l,g,arg_limit,dist_limit,gap_limit);
+              }
+              drop(index(x.pa()), n);
+              b = merge_baseline(b,x);
+              done.insert(n);
+            }
           }
-          b = merge_baseline(b,x);
-          done.insert(n);
-        } else {
-          _connector.emplace(index(x.pa()), n);
         }
       }
       tmp_baseline.push_back(b);
@@ -449,10 +464,9 @@ namespace fdlsgm {
   {
     std::list<index_t> ret;
     for (index_t i=pa_index-range; i<pa_index+range; i++) {
-      auto iter = _connector.equal_range(i);
-      for_each(iter.first, iter.second,
+      auto range = _connector.equal_range(i);
+      for_each(range.first, range.second,
                [&ret](const connector& x){ ret.push_back(x.second); });
-      _connector.erase(i);
     }
     return ret;
   }
@@ -461,6 +475,19 @@ namespace fdlsgm {
   accumulator<N>::pop(const double& pa, const index_t& range)
   {
     return pop(index(pa), range);
+  }
+
+  template<index_t N>
+  void
+  accumulator<N>::drop(const index_t& pa_index, const index_t& baseline_index)
+  {
+    auto range = _connector.equal_range(pa_index);
+    for (auto& it=range.first; it!=range.second; it++) {
+      if (it->second == baseline_index) {
+        _connector.erase(it);
+        break;
+      }
+    }
   }
 
   template<index_t N>
