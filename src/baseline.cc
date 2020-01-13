@@ -43,6 +43,9 @@ namespace fdlsgm {
     _ncx(other.cx()),_ncy(other.cy()),_ncz(other.cz()),_f(other._f)
   {
     for (auto& e: other._elements) _elements.insert(e);
+    _ncx *= _elements.size();
+    _ncy *= _elements.size();
+    _ncz *= _elements.size();
   }
 
 
@@ -222,6 +225,7 @@ namespace fdlsgm {
     printf("# baseline: [%08lx]\n", (size_t)this);
     printf("#\tVertex 0      : (%lf %lf %lf)\n", x0(),y0(),z0());
     printf("#\tVertex 1      : (%lf %lf %lf)\n", x1(),y1(),z1());
+    printf("#\tCenter        : (%lf %lf %lf)\n", cx(),cy(),cz());
     printf("#\tVector        : (%lf %lf %lf)\n", ex(),ey(),ez());
     printf("#\tPosition Angle: %lf\n", pa()*180.0/M_PI);
     printf("#\tLength        : %lf\n", length());
@@ -229,8 +233,8 @@ namespace fdlsgm {
     printf("#\tSize          : %ld\n", size());
     printf("#\tMembers       : [ ");
     for (auto& n: _elements) printf("%ld ", n);  printf("]\n");
-    printf("%3ld %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf",
-           (size_t)0, x0(), y0(), z0(), x1(), y1(), z1());
+    printf("%8.3lf %8.3lf %8.3lf %8.3lf %8.3lf %8.3lf",
+           x0(), y0(), z0(), x1(), y1(), z1());
     printf("   # (r,l,t) = (%.2lf, %.2lf, %.2lf)\n",
            radius(), length(), pa()/M_PI*180.0);
   }
