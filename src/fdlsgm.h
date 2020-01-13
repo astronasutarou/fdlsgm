@@ -228,20 +228,20 @@ namespace fdlsgm {
                 const double& arg_limitL = 10.0*M_PI/180.0,
                 const double& dist_limit = 1.0,
                 const double& gap_limit  = 0.5,
-                const size_t& range      = 5);
+                const index_t& range      = 5);
 
     void reallocate(const double& arg_limit0 = 10.0*M_PI/180.0,
                     const double& arg_limitL = 10.0*M_PI/180.0,
                     const double& dist_limit = 1.0,
                     const double& gap_limit  = 0.5,
-                    const size_t& range      = 5);
+                    const index_t& range      = 5);
 
     void coalesce(const double& arg_limit0 = 5.0*M_PI/180.0,
                   const double& arg_limitL = 10.0*M_PI/180.0,
                   const double& dist_limit = 0.5,
                   const double& gap_limit  = 0.5,
                   const size_t& drop_limit = 3,
-                  const size_t& range      = 5);
+                  const index_t& range      = 5);
 
     /** debug function */
     void dprint(const size_t& limit = 0) const;
@@ -255,8 +255,8 @@ namespace fdlsgm {
 
     baseline& get(const index_t& n) const;
 
-    void push(const index_t& dls_index, const dls& dls);
-    void push(const baseline& baseline);
+    void push_baseline(const index_t& dls_index, const dls& dls);
+    void push_baseline(const baseline& baseline);
 
     std::list<index_t> pop (const index_t& pa_index, const index_t& range);
     std::list<index_t> pop (const double& pa, const index_t& range);
@@ -297,13 +297,14 @@ namespace fdlsgm {
                          const double& arg_limitL,
                          const double& dist_limit,
                          const double& gap_limit,
-                         const size_t& range)
+                         const index_t& range)
   {
     _elements.push_back(dls);
     const index_t idx = _elements.size()-1;
     const double pa = dls.pa();
     const auto& baseline_index = pop(pa, range);
     bool appended = false;
+
 
     for (auto& n: baseline_index) {
       baseline& b = _baselines[n];
@@ -323,7 +324,7 @@ namespace fdlsgm {
       _connector.emplace(pa_idx, n);
     }
     if (!appended) {
-      push(idx, dls);
+      push_baseline(idx, dls);
     }
   }
 
@@ -333,13 +334,13 @@ namespace fdlsgm {
                              const double& arg_limitL,
                              const double& dist_limit,
                              const double& gap_limit,
-                             const size_t& range)
+                             const index_t& range)
   {
     bool updated = false;
     size_t counter(0);
-    const size_t n_elements = count_segment();
+    const index_t n_elements = count_segment();
     while (true) {
-      for (size_t idx=0; idx<n_elements; idx++) {
+      for (index_t idx=0; idx<n_elements; idx++) {
         const auto& dls = _elements[idx];
         const auto& baseline_index = pop(dls.pa(), range);
         // printf("## popped size: %ld\n", baseline_index.size());
@@ -370,7 +371,7 @@ namespace fdlsgm {
                            const double& dist_limit,
                            const double& gap_limit,
                            const size_t& drop_limit,
-                           const size_t& range)
+                           const index_t& range)
   {
     std::set<index_t> done;
     std::vector<baseline> tmp_baseline;
@@ -427,14 +428,14 @@ namespace fdlsgm {
 
   template<index_t N>
   void
-  accumulator<N>::push(const index_t& n, const dls& dls)
+  accumulator<N>::push_baseline(const index_t& n, const dls& dls)
   {
     baseline bl(n, dls);
-    push(bl);
+    push_baseline(bl);
   }
   template<index_t N>
   void
-  accumulator<N>::push(const baseline& bl)
+  accumulator<N>::push_baseline(const baseline& bl)
   {
     const index_t pa_idx = index(bl.pa());
     _baselines.push_back(bl);
