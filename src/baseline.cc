@@ -27,14 +27,14 @@ namespace fdlsgm {
     _x0(0.0),_y0(0.0),_z0(0.0),_x1(0.0),_y1(0.0),_z1(0.0),
     _pa(0.0),_r(0.0),_l(0.0),_ncx(0.0),_ncy(0.0),_ncz(0.0),_f(zeros4x4)
   {}
-  baseline::baseline(const ndls& ndls):
-    _x0(ndls.second.x0()),_y0(ndls.second.y0()),_z0(ndls.second.z0()),
-    _x1(ndls.second.x1()),_y1(ndls.second.y1()),_z1(ndls.second.z1()),
-    _pa(ndls.second.pa()),_r(ndls.second.radius()),_l(ndls.second.length()),
-    _ncx(ndls.second.cx()),_ncy(ndls.second.cy()),_ncz(ndls.second.cz()),
+  baseline::baseline(const index_t& n, const dls& dls):
+    _x0(dls.x0()),_y0(dls.y0()),_z0(dls.z0()),
+    _x1(dls.x1()),_y1(dls.y1()),_z1(dls.z1()),
+    _pa(dls.pa()),_r(dls.radius()),_l(dls.length()),
+    _ncx(dls.cx()),_ncy(dls.cy()),_ncz(dls.cz()),
     _f(zeros4x4)
   {
-    _elements.insert(ndls.first);
+    _elements.insert(n);
   }
   baseline::baseline(const baseline& other):
     _x0(other.x0()),_y0(other.y0()),_z0(other.z0()),
@@ -47,26 +47,24 @@ namespace fdlsgm {
 
 
   bool
-  baseline::append(const ndls& ndls)
+  baseline::append(const index_t& n, const dls& dls)
   {
-    auto& n = ndls.first;
-    auto& e = ndls.second;
     if (_elements.find(n)!=_elements.end()) {
       return false;
     } else {
       _elements.insert(n);
-      _ncx += e.cx(); _ncy += e.cy(); _ncz += e.cz();
+      _ncx += dls.cx(); _ncy += dls.cy(); _ncz += dls.cz();
 
-      if (root_position(e.vertices()[0]) < 0.0) {
-        _x0 = e.x0(); _y0 = e.y0(); _z0 = e.z0();
+      if (root_position(dls.vertices()[0]) < 0.0) {
+        _x0 = dls.x0(); _y0 = dls.y0(); _z0 = dls.z0();
         update_parameters();
       }
-      if (root_position(e.vertices()[1]) > 1.0) {
-        _x1 = e.x1(); _y1 = e.y1(); _z1 = e.z1();
+      if (root_position(dls.vertices()[1]) > 1.0) {
+        _x1 = dls.x1(); _y1 = dls.y1(); _z1 = dls.z1();
         update_parameters();
       }
 
-      update_matrix(e);
+      update_matrix(dls);
       update_direction();
       update_parameters();
       return true;
@@ -112,11 +110,6 @@ namespace fdlsgm {
     return dx()*dls.dx()+dy()*dls.dy()+dz()*dls.dz();
   }
   double
-  baseline::dot(const ndls& ndls) const
-  {
-    return dx()*ndls.second.dx()+dy()*ndls.second.dy()+dz()*ndls.second.dz();
-  }
-  double
   baseline::dot(const baseline& bl) const
   {
     return dx()*bl.dx()+dy()*bl.dy()+dz()*bl.dz();
@@ -127,11 +120,6 @@ namespace fdlsgm {
   baseline::argument(const dls& dls) const
   {
     return std::acos(dot(dls)/length()/dls.length());
-  }
-  double
-  baseline::argument(const ndls& ndls) const
-  {
-    return std::acos(dot(ndls.second)/length()/ndls.second.length());
   }
   double
   baseline::argument(const baseline& bl) const
@@ -183,11 +171,6 @@ namespace fdlsgm {
           + 3.0*(dls.dx()*(dls.z0()-z0())+dls.dz()*(dls.x0()-x0()))
           + 6.0*(dls.z0()-z0())*(dls.x0()-x0()) )*ez()*ex()/3.0;
     return std::sqrt((Cxx+Cyy+Czz+Cxy+Cyz+Czx));
-  }
-  double
-  baseline::lateral_distance(const ndls& ndls) const
-  {
-    return lateral_distance(ndls.second);
   }
   double
   baseline::lateral_distance(const baseline& bl) const

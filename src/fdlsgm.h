@@ -44,11 +44,6 @@ namespace fdlsgm {
   template <class T> using segment = std::array<vector3<T>, 2>;
 
   /** */
-  typedef std::pair<size_t,dls> ndls;
-
-  /** */
-  typedef std::map<size_t,dls> dlspool;
-
 
   /**
    * @brief Directed Line Segment
@@ -57,19 +52,19 @@ namespace fdlsgm {
   public:
     /**
      * @brief Constuct a DLS with a pair of three-dimensional vectors.
-     * @param[in] __v1: The first vertex of the DLS.
-     * @param[in] __v2: The second vertex of the DLS.
+     * @param[in] v1: The first vertex of the DLS.
+     * @param[in] v2: The second vertex of the DLS.
      * @note The z-coordinate of the first vertex should be smaller than that
      *       of the second vertex.
      */
-    dls(const vector3<double>&, const vector3<double>&);
+    dls(const vector3<double>& v1, const vector3<double>& v2);
 
     /**
      * @brief Constuct a DLS with six coordinate values.
      * @note Two Z-values should not be the same to define the direction.
      */
-    dls(const double, const double, const double,
-        const double, const double, const double);
+    dls(const double x1, const double y1, const double z1,
+        const double x2, const double y2, const double z2);
 
     double x0() const; /** x-coordinate of the first vertex */
     double y0() const; /** y-coordinate of the first vertex */
@@ -110,16 +105,14 @@ namespace fdlsgm {
     double length() const;
 
     /** Dot product of the two DLSs. */
-    double dot(const dls&) const;
-    double dot(const ndls&) const;
-    double dot(const baseline&) const;
+    double dot(const dls& dls) const;
+    double dot(const baseline& baseline) const;
 
     /**
      * @brief Angle between two DLSs in radius
      */
-    double argument(const dls&) const;
-    double argument(const ndls&) const;
-    double argument(const baseline&) const;
+    double argument(const dls& dls) const;
+    double argument(const baseline& baseline) const;
 
     /** Print function for debugging. */
     void dprint() const;
@@ -137,13 +130,13 @@ namespace fdlsgm {
   public:
     /**
      * @brief Constuct a baseline.
-     * @param[in] dls: a pair of (size_t, DLS)
+     * @param[in] dls: a pair of (index_t, DLS)
      */
     baseline();
-    baseline(const ndls&);
-    baseline(const baseline&);
+    baseline(const index_t& n, const dls& dls);
+    baseline(const baseline& baseline);
 
-    bool append(const ndls&);
+    bool append(const index_t& n, const dls& dls);
 
     double x0() const; /** x-coordinate of the first vertex */
     double y0() const; /** y-coordinate of the first vertex */
@@ -183,38 +176,35 @@ namespace fdlsgm {
 
     size_t size() const;
 
-    double dot(const dls&) const;
-    double dot(const ndls&) const;
-    double dot(const baseline&) const;
+    double dot(const dls& dls) const;
+    double dot(const baseline& baseline) const;
 
-    double argument(const dls&) const;
-    double argument(const ndls&) const;
-    double argument(const baseline&) const;
+    double argument(const dls& dls) const;
+    double argument(const baseline& baseline) const;
 
-    double point_distance(const vector3<double>&) const;
+    double point_distance(const vector3<double>& v) const;
 
-    double lateral_distance(const dls&) const;
-    double lateral_distance(const ndls&) const;
-    double lateral_distance(const baseline&) const;
+    double lateral_distance(const dls& dls) const;
+    double lateral_distance(const baseline& baseline) const;
 
-    double gap_length(const dls&) const;
-    double gap_length(const baseline&) const;
+    double gap_length(const dls& dls) const;
+    double gap_length(const baseline& baseline) const;
 
     /** debug function */
     void dprint() const;
 
     friend const baseline
-    merge_baseline(const baseline&, const baseline&);
+    merge_baseline(const baseline& first, const baseline& second);
   private:
-    std::set<size_t> _elements;
+    std::set<index_t> _elements;
     double _x0,_y0,_z0,_x1,_y1,_z1;
     double _pa, _r, _l, _ncx, _ncy, _ncz;
     matrix4x4<double> _f;
 
-    double root_position(const vector3<double>&) const;
-    double overlap_length(const dls&) const;
+    double root_position(const vector3<double>& v) const;
+    double overlap_length(const dls& dls) const;
 
-    void update_matrix(const dls&);
+    void update_matrix(const dls& dls);
     void update_direction();
     void update_parameters();
   };

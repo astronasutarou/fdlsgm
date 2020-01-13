@@ -61,11 +61,6 @@ namespace fdlsgm {
     return dx()*dls.dx()+dy()*dls.dy()+dz()*dls.dz();
   }
   double
-  dls::dot(const ndls& ndls) const
-  {
-    return dx()*ndls.second.dx()+dy()*ndls.second.dy()+dz()*ndls.second.dz();
-  }
-  double
   dls::dot(const baseline& bl) const
   {
     return dx()*bl.dx()+dy()*bl.dy()+dz()*bl.dz();
@@ -75,11 +70,6 @@ namespace fdlsgm {
   dls::argument(const dls& dls) const
   {
     return std::acos(dot(dls)/length()/dls.length());
-  }
-  double
-  dls::argument(const ndls& ndls) const
-  {
-    return std::acos(dot(ndls.second)/length()/ndls.second.length());
   }
   double
   dls::argument(const baseline& bl) const
