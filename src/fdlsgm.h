@@ -21,42 +21,27 @@
 #include<utility>
 #include<exception>
 
+#include "linalg.h"
+
 
 namespace fdlsgm {
+  using linalg::index_t;
+  using linalg::vector2;
+  using linalg::vector3;
+  using linalg::vector4;
+  using linalg::matrix3x3;
+  using linalg::matrix4x4;
+  using linalg::zeros4x4;
+  using linalg::ident4x4;
+  using linalg::normalize_vector;
+  using linalg::outer_product;
+  using linalg::eigenvector_jacobi_4x4;
 
   class dls;
   class baseline;
 
-  /** Two-Dimensional Vector. */
-  template <class T> using vector2 = std::array<T, 2>;
-
-  /** Three-Dimensional Vector. */
-  template <class T> using vector3 = std::array<T, 3>;
-
-  /** Four-Dimensional Vector. */
-  template <class T> using vector4 = std::array<T, 4>;
-
   /** Line Segment. */
   template <class T> using segment = std::array<vector3<T>, 2>;
-
-  /** 3x3 Matrix */
-  template <class T> using matrix3x3 = std::array<vector3<T>,3>;
-
-  /** 4x4 Matrix */
-  template <class T> using matrix4x4 = std::array<vector4<T>,4>;
-
-  constexpr matrix4x4<double> zeros4x4 =
-    {vector4<double>{0,0,0,0},vector4<double>{0,0,0,0},
-     vector4<double>{0,0,0,0},vector4<double>{0,0,0,0}};
-
-  constexpr matrix4x4<double> ident4x4 =
-    {vector4<double>{1,0,0,0},vector4<double>{0,1,0,0},
-     vector4<double>{0,0,1,0},vector4<double>{0,0,0,1}};
-
-
-  /** Calculate Eigen Vectors with the Jacobi algorithm */
-  const matrix4x4<double>
-  eigenvector_jacobi_4x4(const matrix4x4<double>&);
 
   /** */
   typedef std::pair<size_t,dls> ndls;
