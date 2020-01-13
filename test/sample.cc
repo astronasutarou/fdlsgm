@@ -9,8 +9,7 @@
 int
 main(int argn, char** argv)
 {
-  std::unordered_map<size_t, fdlsgm::dls> pool;
-  std::deque<fdlsgm::baseline> accumul, merged;
+  fdlsgm::accumulator<45> accumul;
 
   clock_t t = clock();
   std::mt19937 gen; gen.seed(t);
@@ -33,8 +32,7 @@ main(int argn, char** argv)
       const double x2 = scatter(gen), y2 = scatter(gen);
       fdlsgm::dls
         a({x1+x,y1+y,z},{x2+x+dx,y2+y+dy,z+1});
-      const size_t n = n_elem*ig+ie;
-      pool.emplace(n, a);
+      accumul.insert(a);
       printf("%3ld ",1+(ig%8)); a.dprint();
     }
   }
@@ -46,78 +44,11 @@ main(int argn, char** argv)
     const double dx = velocity(gen);
     const double dy = velocity(gen);
     fdlsgm::dls a({x0,y0,z0},{x0+dx,y0+dy,z0+1.0});
-    const size_t n = n_elem*n_group + id;
-    pool.emplace(n, a);
+    accumul.insert(a);
     printf("%3d ", -1); a.dprint();
   }
   printf("\n\n");
 
-  /* first run */
-  for (auto& v: pool) {
-    bool flag = false;
-    for (auto& bl: accumul) {
-      const auto d = bl.argument(v.second)*180.0/M_PI;
-      const auto l = bl.lateral_distance(v.second);
-      const auto g = bl.gap_length(v.second);
-      if (d < 45.0 && l < 3.0 && g < 0.5) {
-        printf("# matched with [%08lx] (%6.4lf,%6.4f) / ", (size_t)&bl,d,l);
-        flag = bl.append(v);
-        if (flag) {
-          printf("append to [%08lx].\n", (size_t)&bl);
-        }
-      } else {
-        // printf("# not matched with [%08lx] (%6.4lf,%6.4f) \n",
-        //        (size_t)&bl,d,l);
-      }
-    }
-    if (accumul.empty() || flag == false) {
-      printf("# create new baseline / ");
-      fdlsgm::baseline baseline(v);
-      accumul.push_back(baseline);
-      printf("baseline [%08lx] pushed\n", (size_t)&accumul.back());
-    }
-  }
-  /* iterate until convergence */
-  bool changed = false;
-  while (true) {
-    for (auto& v: pool) {
-      for (auto& bl: accumul) {
-        const auto d = bl.argument(v.second)*180.0/M_PI;
-        const auto l = bl.lateral_distance(v.second);
-        const auto g = bl.gap_length(v.second);
-        if (d < 45.0 && l < 3.0 && g < 0.5)
-          changed |= bl.append(v);
-      }
-    }
-    if (!changed) break;
-    changed = false;
-  }
-
-  printf("# -------\n");
-
-  while (!accumul.empty()) {
-    const auto b = accumul.front();
-    fdlsgm::baseline m(b);
-    accumul.pop_front();
-    const size_t N = accumul.size();
-    for (size_t i=0; i<N; i++) {
-      const auto c = accumul.front();
-      accumul.pop_front();
-      const auto d = b.argument(c)*180.0/M_PI;
-      const auto l = b.lateral_distance(c);
-      const auto g = b.gap_length(c);
-      if ( d < 5.0 && l < 3.0 && g < 0.5) {
-        auto k = m.size();
-        m = merge_baseline(m,c);
-        printf("merged!! (%ld = %ld + %ld)\n", m.size(), k, c.size());
-      } else {
-        accumul.push_back(c);
-      }
-    }
-    if (m.size()>4)
-      merged.push_back(m);
-  }
-  for (auto& e: merged) e.dprint();
-  printf("# finally %ld baseline retrieved.\n", merged.size());
-
+  printf("N(segment) : %ld\n", accumul.count_dls());
+  printf("N(baseline): %ld\n", accumul.count_baseline());
 }
