@@ -122,12 +122,12 @@ namespace fdlsgm {
   double
   baseline::argument(const dls& dls) const
   {
-    return std::acos(dot(dls)/length()/dls.length());
+    return std::acos(clamp(dot(dls)/length()/dls.length(),-1.0,1.0));
   }
   double
   baseline::argument(const baseline& bl) const
   {
-    return std::acos(dot(bl)/length()/bl.length());
+    return std::acos(clamp(dot(bl)/length()/bl.length(),-1.0,1.0));
   }
 
 
@@ -173,7 +173,7 @@ namespace fdlsgm {
       - ( 2.0*dls.dz()*dls.dx()
           + 3.0*(dls.dx()*(dls.z0()-z0())+dls.dz()*(dls.x0()-x0()))
           + 6.0*(dls.z0()-z0())*(dls.x0()-x0()) )*ez()*ex()/3.0;
-    return std::sqrt((Cxx+Cyy+Czz+Cxy+Cyz+Czx));
+    return std::sqrt(std::max(0.0,Cxx+Cyy+Czz+Cxy+Cyz+Czx));
   }
   double
   baseline::lateral_distance(const baseline& bl) const
@@ -199,7 +199,7 @@ namespace fdlsgm {
       - ( 2.0*bl.dz()*bl.dx()
           + 3.0*(bl.dx()*(bl.z0()-z0())+bl.dz()*(bl.x0()-x0()))
           + 6.0*(bl.z0()-z0())*(bl.x0()-x0()) )*ez()*ex()/3.0;
-    return std::sqrt((Cxx+Cyy+Czz+Cxy+Cyz+Czx));
+    return std::sqrt(std::max(0.0,Cxx+Cyy+Czz+Cxy+Cyz+Czx));
   }
 
   double

@@ -69,12 +69,12 @@ namespace fdlsgm {
   double
   dls::argument(const dls& dls) const
   {
-    return std::acos(dot(dls)/length()/dls.length());
+    return std::acos(clamp(dot(dls)/length()/dls.length(),-1.0,1.0));
   }
   double
   dls::argument(const baseline& bl) const
   {
-    return std::acos(dot(bl)/length()/bl.length());
+    return std::acos(clamp(dot(bl)/length()/bl.length(),-1.0,1.0));
   }
 
   void

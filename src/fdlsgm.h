@@ -49,6 +49,12 @@ namespace fdlsgm {
   /** */
   typedef std::pair<index_t,index_t> connector;
 
+  inline double
+  clamp(double v, double lo, double hi)
+  {
+    return ((v>lo)?(v<hi)?v:hi:lo);
+  }
+
   /**
    * @brief Directed Line Segment
    */
