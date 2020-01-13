@@ -205,16 +205,18 @@ namespace fdlsgm {
   double
   baseline::gap_length(const dls& dls) const
   {
-    auto& v0 = dls.vertices()[0];
-    auto& v1 = dls.vertices()[1];
+    const auto& v = dls.vertices();
+    const auto& v0 = v[0];
+    const auto& v1 = v[1];
     double t0 = root_position(v0), t1 = root_position(v1);
     return (t1<0.0)?-t1:(t0>1.0)?t0-1.0:0.0;
   }
   double
   baseline::gap_length(const baseline& bl) const
   {
-    auto& v0 = bl.vertices()[0];
-    auto& v1 = bl.vertices()[1];
+    const auto& v = bl.vertices();
+    const auto& v0 = v[0];
+    const auto& v1 = v[1];
     double t0 = root_position(v0), t1 = root_position(v1);
     return (t1<0.0)?-t1:(t0>1.0)?t0-1.0:0.0;
   }
