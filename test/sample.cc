@@ -20,7 +20,7 @@ main(int argn, char** argv)
   const size_t n_elem       = 10;
   const size_t n_group      = 50;
   const size_t n_obstacle   = 50;
-  const size_t n_distracter = 1000;
+  const size_t n_distracter = 3000;
 
   clock_t begin = clock();
   for (size_t ig=0; ig<n_group; ig++) {
