@@ -26,6 +26,8 @@
 
 
 namespace fdlsgm {
+  constexpr bool DEBUG_MESSAGE = false;
+
   using linalg::index_t;
   using linalg::vector2;
   using linalg::vector3;
