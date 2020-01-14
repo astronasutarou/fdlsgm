@@ -1,3 +1,7 @@
+build/
+
 *.o
 *.pyc
 *.png
+
+/fdlsgm.c
