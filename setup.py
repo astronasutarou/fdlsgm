@@ -36,10 +36,10 @@ if __name__ == '__main__':
   depends      = glob(os.path.join('src', '*.h'))
   libraries    = ['m',]
   include_dirs = [numpy.get_include(), 'src']
-  compile_args = ['-std=c++11',]
+  compile_args = ['-std=c++11']
   extensions   = [
     Extension('fdlsgm',
-              language='c++11',
+              language='c++',
               sources=sources,
               libraries=libraries,
               include_dirs=include_dirs,

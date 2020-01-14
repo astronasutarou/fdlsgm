@@ -1,7 +1,9 @@
 build/
 
+*.so
 *.o
 *.pyc
 *.png
 
 /fdlsgm.c
+/fdlsgm.cpp
