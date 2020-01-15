@@ -415,8 +415,7 @@ namespace fdlsgm {
                 const double& arg_limit0 = 10.0*M_PI/180.0,
                 const double& arg_limitL = 20.0*M_PI/180.0,
                 const double& dist_limit = 3.0,
-                const double& gap_limit  = 0.5,
-                const index_t& range     = 5);
+                const double& gap_limit  = 0.5);
 
     /**
      * @brief assign registered DLSs into baselines until converged.
@@ -428,8 +427,7 @@ namespace fdlsgm {
     void reallocate(const double& arg_limit0 = 10.0*M_PI/180.0,
                     const double& arg_limitL = 20.0*M_PI/180.0,
                     const double& dist_limit = 3.0,
-                    const double& gap_limit  = 0.5,
-                    const index_t& range     = 5);
+                    const double& gap_limit  = 0.5);
 
     /**
      * @brief merge similar baselines
@@ -443,8 +441,7 @@ namespace fdlsgm {
                   const double& arg_limitL = 10.0*M_PI/180.0,
                   const double& dist_limit = 1.0,
                   const double& gap_limit  = 0.5,
-                  const size_t& drop_limit = 3,
-                  const index_t& range     = 5);
+                  const size_t& drop_limit = 3);
 
     /** debug function */
     void dprint(const size_t& limit = 0) const;
@@ -515,14 +512,15 @@ namespace fdlsgm {
                          const double& arg_limit0,
                          const double& arg_limitL,
                          const double& dist_limit,
-                         const double& gap_limit,
-                         const index_t& range)
+                         const double& gap_limit)
   {
     const double dist_limit_sq = dist_limit*dist_limit;
+    const index_t range =
+      clamp((index_t)std::ceil((arg_limit0+arg_limitL)/tics),0L,N/2);
+    const double pa = dls.pa();
 
     _elements.push_back(dls);
     const index_t idx = _elements.size()-1;
-    const double pa = dls.pa();
     const auto& baseline_index = query(pa, range);
     bool appended = false;
 
@@ -558,11 +556,12 @@ namespace fdlsgm {
   accumulator<N>::reallocate(const double& arg_limit0,
                              const double& arg_limitL,
                              const double& dist_limit,
-                             const double& gap_limit,
-                             const index_t& range)
+                             const double& gap_limit)
   {
     const index_t n_elements = count_segment();
     const double dist_limit_sq = dist_limit*dist_limit;
+    const index_t range =
+      clamp((index_t)std::ceil((arg_limit0+arg_limitL)/tics),0L,N/2);
 
     bool updated = false;
     size_t counter(0);
@@ -600,14 +599,16 @@ namespace fdlsgm {
                            const double& arg_limitL,
                            const double& dist_limit,
                            const double& gap_limit,
-                           const size_t& drop_limit,
-                           const index_t& range)
+                           const size_t& drop_limit)
   {
     std::set<index_t> done;
     std::vector<baseline> tmp_baseline;
     std::unordered_multimap<index_t, index_t> tmp_connector;
     const double dist_limit_sq = dist_limit*dist_limit;
     const index_t n_elements = count_baseline();
+    const index_t range =
+      clamp((index_t)std::ceil((arg_limit0+arg_limitL)/tics),0L,N/2);
+
     tmp_baseline.reserve(n_elements);
     for (index_t i=0; i<n_elements; i++) {
       if (done.find(i) != done.end()) continue;
