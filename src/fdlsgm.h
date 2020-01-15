@@ -193,9 +193,15 @@ namespace fdlsgm {
     double argument(const baseline& baseline) const;
 
     double point_distance(const vector3<double>& v) const;
+    /** squared-distance between the baseline and a point. */
+    double point_distance_squared(const vector3<double>& v) const;
 
     double lateral_distance(const dls& dls) const;
+    /** squared-lateral distance between the baseline and a DLS. */
+    double lateral_distance_squared(const dls& dls) const;
     double lateral_distance(const baseline& baseline) const;
+    /** squared-lateral distance between two baselines. */
+    double lateral_distance_squared(const baseline& baseline) const;
 
     double gap_length(const dls& dls) const;
     double gap_length(const baseline& baseline) const;
@@ -309,25 +315,27 @@ namespace fdlsgm {
                          const double& gap_limit,
                          const index_t& range)
   {
+    const double dist_limit_sq = dist_limit*dist_limit;
+
     _elements.push_back(dls);
     const index_t idx = _elements.size()-1;
     const double pa = dls.pa();
     const auto& baseline_index = pop(pa, range);
     bool appended = false;
 
-
     for (auto& n: baseline_index) {
       baseline& b = _baselines[n];
-      const double arg_limit = arg_limit0 + arg_limitL/std::sqrt(b.length());
+      const double arg_limit =
+        arg_limit0 + arg_limitL/std::sqrt(b.length());
       const double d = b.argument(dls);
       if (d < arg_limit) {
         const double g = b.gap_length(dls);
         if (g < gap_limit) {
-          const double l = b.lateral_distance(dls);
-          if (l < dist_limit) {
+          const double l = b.lateral_distance_squared(dls);
+          if (l < dist_limit_sq) {
             if (DEBUG_MESSAGE) {
               printf("# match[%04lx:%04lx] (%6.4lf,%6.4f,%6.4f)\n",
-                     idx,n,d/arg_limit,l/dist_limit,g/gap_limit);
+                     idx,n,d/arg_limit,l/dist_limit_sq,g/gap_limit);
             }
             drop(index(b.pa()), n);
             b.append(idx, dls);
@@ -350,15 +358,16 @@ namespace fdlsgm {
                              const double& gap_limit,
                              const index_t& range)
   {
+    const index_t n_elements = count_segment();
+    const double dist_limit_sq = dist_limit*dist_limit;
+
     bool updated = false;
     size_t counter(0);
-    const index_t n_elements = count_segment();
     while (true) {
       for (index_t idx=0; idx<n_elements; idx++) {
         const auto& dls = _elements[idx];
         const auto& baseline_index = pop(dls.pa(), range);
 
-        // printf("## popped size: %ld\n", baseline_index.size());
         for (auto& n: baseline_index) {
           baseline& b = _baselines[n];
           const double arg_limit = arg_limit0
@@ -367,8 +376,8 @@ namespace fdlsgm {
           if (d < arg_limit) {
             const double g = b.gap_length(dls);
             if (g < gap_limit) {
-              const double l = b.lateral_distance(dls);
-              if (l < dist_limit) {
+              const double l = b.lateral_distance_squared(dls);
+              if (l < dist_limit_sq) {
                 drop(index(b.pa()), n);
                 updated |= b.append(idx, dls);
                 _connector.emplace(index(b.pa()), n);
@@ -394,6 +403,7 @@ namespace fdlsgm {
     std::set<index_t> done;
     std::vector<baseline> tmp_baseline;
     std::unordered_multimap<index_t, index_t> tmp_connector;
+    const double dist_limit_sq = dist_limit*dist_limit;
     const index_t n_elements = count_baseline();
     tmp_baseline.reserve(n_elements);
     for (index_t i=0; i<n_elements; i++) {
@@ -411,8 +421,8 @@ namespace fdlsgm {
         if (d < arg_limit) {
           const double g = b.gap_length(x);
           if (g < gap_limit) {
-            const double l = b.lateral_distance(x);
-            if (l < dist_limit) {
+            const double l = b.lateral_distance_squared(x);
+            if (l < dist_limit_sq) {
               if (DEBUG_MESSAGE) {
                 printf("# merge[%04lx] "
                        "(%6.4lf,%6.4f,%6.4f) [%ld+%ld]\n",

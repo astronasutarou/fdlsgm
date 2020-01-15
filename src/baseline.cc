@@ -132,25 +132,30 @@ namespace fdlsgm {
 
 
   double
-  baseline::point_distance(const vector3<double>& p) const
+  baseline::point_distance_squared(const vector3<double>& v) const
   {
     const double& Cxx =
-      std::pow((p[0]-x0()),2.0)*(1.0-ex()*ex());
+      std::pow((v[0]-x0()),2.0)*(1.0-ex()*ex());
     const double& Cyy =
-      std::pow((p[1]-y0()),2.0)*(1.0-ey()*ey());
+      std::pow((v[1]-y0()),2.0)*(1.0-ey()*ey());
     const double& Czz =
-      std::pow((p[2]-z0()),2.0)*(1.0-ez()*ez());
+      std::pow((v[2]-z0()),2.0)*(1.0-ez()*ez());
     const double& Cxy =
-      -2.0*(p[0]-x0())*(p[1]-y0())*ex()*ey();
+      -2.0*(v[0]-x0())*(v[1]-y0())*ex()*ey();
     const double& Cyz =
-      -2.0*(p[1]-y0())*(p[2]-z0())*ey()*ez();
+      -2.0*(v[1]-y0())*(v[2]-z0())*ey()*ez();
     const double& Czx =
-      -2.0*(p[2]-z0())*(p[0]-x0())*ez()*ex();
-    return std::sqrt(Cxx+Cyy+Czz+Cxy+Cyz+Czx);
+      -2.0*(v[2]-z0())*(v[0]-x0())*ez()*ex();
+    return Cxx+Cyy+Czz+Cxy+Cyz+Czx;
+  }
+  double
+  baseline::point_distance(const vector3<double>& v) const
+  {
+    return std::sqrt(point_distance_squared(v));
   }
 
   double
-  baseline::lateral_distance(const dls& dls) const
+  baseline::lateral_distance_squared(const dls& dls) const
   {
     const double& Cxx =
       ( std::pow(dls.x1()-x0(),3.0) - std::pow(dls.x0()-x0(),3.0) )
@@ -173,10 +178,15 @@ namespace fdlsgm {
       - ( 2.0*dls.dz()*dls.dx()
           + 3.0*(dls.dx()*(dls.z0()-z0())+dls.dz()*(dls.x0()-x0()))
           + 6.0*(dls.z0()-z0())*(dls.x0()-x0()) )*ez()*ex()/3.0;
-    return std::sqrt(std::max(0.0,Cxx+Cyy+Czz+Cxy+Cyz+Czx));
+    return std::max(0.0,Cxx+Cyy+Czz+Cxy+Cyz+Czx);
   }
   double
-  baseline::lateral_distance(const baseline& bl) const
+  baseline::lateral_distance(const dls& dls) const
+  {
+    return std::sqrt(lateral_distance_squared(dls));
+  }
+  double
+  baseline::lateral_distance_squared(const baseline& bl) const
   {
     const double& Cxx =
       ( std::pow(bl.x1()-x0(),3.0) - std::pow(bl.x0()-x0(),3.0) )
@@ -199,7 +209,12 @@ namespace fdlsgm {
       - ( 2.0*bl.dz()*bl.dx()
           + 3.0*(bl.dx()*(bl.z0()-z0())+bl.dz()*(bl.x0()-x0()))
           + 6.0*(bl.z0()-z0())*(bl.x0()-x0()) )*ez()*ex()/3.0;
-    return std::sqrt(std::max(0.0,Cxx+Cyy+Czz+Cxy+Cyz+Czx));
+    return std::max(0.0,Cxx+Cyy+Czz+Cxy+Cyz+Czx);
+  }
+  double
+  baseline::lateral_distance(const baseline& bl) const
+  {
+    return std::sqrt(lateral_distance_squared(bl));
   }
 
   double
