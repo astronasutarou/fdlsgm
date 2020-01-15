@@ -9,7 +9,7 @@
 int
 main(int argn, char** argv)
 {
-  fdlsgm::accumulator<80> accumul;
+  fdlsgm::accumulator<360> accumul;
 
   clock_t t = clock();
   std::mt19937 gen; gen.seed(t);
