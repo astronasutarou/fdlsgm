@@ -588,7 +588,7 @@ namespace fdlsgm {
           }
         }
       }
-      if (!updated) break;
+      if (!updated || counter > 10) break;
       updated = false; counter++;
     }
   }
