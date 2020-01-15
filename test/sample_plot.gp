@@ -5,7 +5,8 @@ set yr [-1250:1250]
 
 FILENAME='sample_output.txt'
 set size ratio -1
-set view map
+set view equal xy
+set view 0,0
 set grid
 splot \
   for [n=0:49] FILENAME i 0 ev ::(10*n)::(10*n+9) \
