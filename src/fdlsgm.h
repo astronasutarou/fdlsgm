@@ -1,6 +1,6 @@
 /**
  * @file fdlsgm.h
- * @brief Header file for the FDLSGM library
+ * @brief header file for the FDLSGM library
  * @author Ryou Ohsawa
  * @year 2020
  */
@@ -40,88 +40,123 @@ namespace fdlsgm {
   using linalg::outer_product;
   using linalg::eigenvector_jacobi_4x4;
 
+  /** directed line segment. */
   class dls;
+  /** baseline. */
   class baseline;
+  /** handler of DLS and baseline, N is the size of internal array. */
+  template <index_t N> class accumulator;
 
-  /** Line Segment. */
+  /** line segment defined by two vertices. */
   template <class T> using segment = std::array<vector3<T>, 2>;
 
-  /** */
-  typedef std::pair<index_t,index_t> connector;
-
-  inline double
-  clamp(double v, double lo, double hi)
+  /**
+   * @brief assert a comparable value within [lo,hi]
+   * @param[in] v: a number to be constrained.
+   * @param[in] lo: a lower bound value.
+   * @param[in] hi: an upper bound value.
+   * @return a number constrained in [lo,hi].
+   */
+  template <typename T> inline T
+  clamp(const T& v, const T& lo, const T& hi)
   {
     return ((v>lo)?(v<hi)?v:hi:lo);
   }
 
-  /**
-   * @brief Directed Line Segment
-   */
   class dls {
   public:
     /**
-     * @brief Constuct a DLS with a pair of three-dimensional vectors.
-     * @param[in] v1: The first vertex of the DLS.
-     * @param[in] v2: The second vertex of the DLS.
-     * @note The z-coordinate of the first vertex should be smaller than that
-     *       of the second vertex.
+     * @brief constuct a DLS with a pair of three-dimensional vectors.
+     * @param[in] v1: the first vertex of the DLS.
+     * @param[in] v2: the second vertex of the DLS.
+     * @note the direction is defined from v1 to v2.
      */
     dls(const vector3<double>& v1, const vector3<double>& v2);
 
     /**
-     * @brief Constuct a DLS with six coordinate values.
-     * @note Two Z-values should not be the same to define the direction.
+     * @brief constuct a DLS with six coordinate values.
+     * @param[in] x1: x-coordinate of the first vertex.
+     * @param[in] y1: y-coordinate of the first vertex.
+     * @param[in] z1: z-coordinate of the first vertex.
+     * @param[in] x2: x-coordinate of the second vertex.
+     * @param[in] y2: y-coordinate of the second vertex.
+     * @param[in] z2: z-coordinate of the second vertex.
      */
     dls(const double x1, const double y1, const double z1,
         const double x2, const double y2, const double z2);
 
-    double x0() const; /** x-coordinate of the first vertex */
-    double y0() const; /** y-coordinate of the first vertex */
-    double z0() const; /** z-coordinate of the first vertex */
-    double x1() const; /** x-coordinate of the second vertex */
-    double y1() const; /** y-coordinate of the second vertex */
-    double z1() const; /** z-coordinate of the second vertex */
-    double cx() const; /** x-coordinate of the DLS center */
-    double cy() const; /** y-coordinate of the DLS center */
-    double cz() const; /** z-coordinate of the DLS center */
-    double dx() const; /** difference in x-coordinates */
-    double dy() const; /** difference in y-coordinates */
-    double dz() const; /** difference in z-coordinates */
+    double x0() const; /** x-coordinate of the first vertex. */
+    double y0() const; /** y-coordinate of the first vertex. */
+    double z0() const; /** z-coordinate of the first vertex. */
+    double x1() const; /** x-coordinate of the second vertex. */
+    double y1() const; /** y-coordinate of the second vertex. */
+    double z1() const; /** z-coordinate of the second vertex. */
+    double cx() const; /** x-coordinate of the DLS center. */
+    double cy() const; /** y-coordinate of the DLS center. */
+    double cz() const; /** z-coordinate of the DLS center. */
+    double dx() const; /** difference along with x-axis. */
+    double dy() const; /** difference along with y-axis. */
+    double dz() const; /** difference along with z-axis. */
 
-    double ex() const; /** x-element of the unit vector */
-    double ey() const; /** y-element of the unit vector */
-    double ez() const; /** z-element of the unit vector */
+    double ex() const; /** x-element of the unit vector. */
+    double ey() const; /** y-element of the unit vector. */
+    double ez() const; /** z-element of the unit vector. */
 
+    /**
+     * @brief vertices which define the DLS.
+     * @return a pair of the vertices as segment.
+     */
     const segment<double> vertices() const;
 
-    /** unit vector */
+    /**
+     * @brief unit vector.
+     * @return the direction of the DLS as a vector of unit length.
+     */
     const vector3<double> unit_vector() const;
 
     /**
-     * @brief Position Angle of the DLS in radian.
-     * @note The y-axis is the origin and the anti-clockwise is positive.
+     * @brief position angle of the DLS in radian.
+     * @return position angle in radian.
+     * @note the y-axis is the origin and the anti-clockwise is positive.
      */
     double pa() const;
 
     /**
-     * @brief Length of the DLS projected onto the XY-plane.
+     * @brief length of the DLS projected onto the XY-plane.
+     * @return the projected length.
      */
     double radius() const;
 
     /**
-     * @brief Length of the DLS.
+     * @brief length of the DLS in the XYZ-space.
+     * @return the length of the DLS.
      */
     double length() const;
 
-    /** Dot product of the two DLSs. */
+    /**
+     * @brief dot product of two DLSs.
+     * @param[in] dls: another DLS.
+     * @return the dot product of this DLS and another DLS.
+     */
     double dot(const dls& dls) const;
+    /**
+     * @brief dot product of this DLS and a baseline.
+     * @param[in] baseline: a baseline.
+     * @return the dot product of this DLS and the baseline.
+     */
     double dot(const baseline& baseline) const;
 
     /**
-     * @brief Angle between two DLSs in radius
+     * @brief angle between two DLSs.
+     * @param[in] dls: another DLS.
+     * @return the angle between this DLS and another DLS in radian.
      */
     double argument(const dls& dls) const;
+    /**
+     * @brief angle between this DLS and a baseline.
+     * @param[in] baseline: a baseline.
+     * @return the angle between this DLS and the baseline in radian.
+     */
     double argument(const baseline& baseline) const;
 
     /** Print function for debugging. */
@@ -139,91 +174,207 @@ namespace fdlsgm {
   class baseline {
   public:
     /**
-     * @brief Constuct a baseline.
-     * @param[in] dls: a pair of (index_t, DLS)
+     * @brief constuct a baseline without DLS.
      */
     baseline();
+    /**
+     * @brief constuct a baseline with a DLS.
+     * @param[in] n: the ID-number of the DLS.
+     * @param[in] dls: a directed line segment.
+     */
     baseline(const index_t& n, const dls& dls);
+    /**
+     * @brief constuct a copy of a baseline.
+     * @param[in] baseline: an original baseline.
+     */
     baseline(const baseline& baseline);
 
+    /**
+     * @brief append a DLS into the baseline.
+     * @param[in] n: the ID-number of the DLS.
+     * @param[in] dls: a directed line segment.
+     * @return true if the DLS is newly registered in the baseline.
+     *         false if the DLS is already registered.
+     */
     bool append(const index_t& n, const dls& dls);
 
-    double x0() const; /** x-coordinate of the first vertex */
-    double y0() const; /** y-coordinate of the first vertex */
-    double z0() const; /** z-coordinate of the first vertex */
-    double x1() const; /** x-coordinate of the second vertex */
-    double y1() const; /** y-coordinate of the second vertex */
-    double z1() const; /** z-coordinate of the second vertex */
-    double cx() const; /** x-coordinate of the baseline center */
-    double cy() const; /** y-coordinate of the baseline center */
-    double cz() const; /** z-coordinate of the baseline center */
-    double dx() const; /** difference in x-coordinates */
-    double dy() const; /** difference in y-coordinates */
-    double dz() const; /** difference in z-coordinates */
+    double x0() const; /** x-coordinate of the first vertex. */
+    double y0() const; /** y-coordinate of the first vertex. */
+    double z0() const; /** z-coordinate of the first vertex. */
+    double x1() const; /** x-coordinate of the second vertex. */
+    double y1() const; /** y-coordinate of the second vertex. */
+    double z1() const; /** z-coordinate of the second vertex. */
+    double cx() const; /** x-coordinate of the baseline center. */
+    double cy() const; /** y-coordinate of the baseline center. */
+    double cz() const; /** z-coordinate of the baseline center. */
+    double dx() const; /** difference along with x-axis. */
+    double dy() const; /** difference along with y-axis. */
+    double dz() const; /** difference along with z-axis. */
 
-    double ex() const; /** x-element of the unit vector */
-    double ey() const; /** y-element of the unit vector */
-    double ez() const; /** z-element of the unit vector */
+    double ex() const; /** x-element of the unit vector. */
+    double ey() const; /** y-element of the unit vector. */
+    double ez() const; /** z-element of the unit vector. */
 
+    /**
+     * @brief vertices which define the baseline.
+     * @return a pair of the vertices as segment.
+     */
     const segment<double> vertices() const;
 
-    /** unit vector */
+    /**
+     * @brief unit vector.
+     * @return the direction of the baseline as a vector of unit length.
+     */
     const vector3<double> unit_vector() const;
 
     /**
-     * @brief Position Angle of the DLS.
-     * The y-axis is the origin and the anti-clockwise is positive.
+     * @brief position angle of the baseline in radian.
+     * @return position angle in radian.
+     * @note the y-axis is the origin and the anti-clockwise is positive.
      */
     double pa() const;
 
     /**
-     * @brief Velocity of the DLS projected onto the XY-plane.
+     * @brief length of the baseline projected onto the XY-plane.
+     * @return the projected length.
      */
     double radius() const;
 
-    /** total length */
+    /**
+     * @brief length of the baseline in the XYZ-space.
+     * @return the length of the line.
+     */
     double length() const;
 
+    /**
+     * @brief number of the DLSs registered in the baseline.
+     * @return the number of the DLSs.
+     */
     size_t size() const;
 
+    /**
+     * @brief dot product of this baseline and a DLS.
+     * @param[in] dls: a directed line segment.
+     * @return the dot product of this baseline and a DLS.
+     */
     double dot(const dls& dls) const;
+    /**
+     * @brief dot product of two baselines.
+     * @param[in] baseline: another baseline.
+     * @return the dot product of this baseline and another baseline.
+     */
     double dot(const baseline& baseline) const;
 
+    /**
+     * @brief angle between this baseline and a DLS.
+     * @param[in] dls: a directed line segment.
+     * @return the angle between this baseline and a DLS.
+     */
     double argument(const dls& dls) const;
+    /**
+     * @brief angle between this DLS and a baseline.
+     * @param[in] baseline: a baseline.
+     * @return the angle between this DLS and the baseline in radian.
+     */
     double argument(const baseline& baseline) const;
 
+    /**
+     * @brief distance between the baseline and a point.
+     * @param[in] v: a vector representing coordinates of a point.
+     * @return the distance between this baseline and the given position.
+     */
     double point_distance(const vector3<double>& v) const;
     /** squared-distance between the baseline and a point. */
     double point_distance_squared(const vector3<double>& v) const;
 
+    /**
+     * @brief lateral distance between the baseline and a DLS.
+     * @param[in] dls: a directed line segment.
+     * @return the lateral disntace between this baseline and the DLS.
+     * @note the lateral distance is defined as the the square-root of
+     *       the squared-distance integrated along with the DLS and
+     *       devided by the length of the DLS.
+     */
     double lateral_distance(const dls& dls) const;
     /** squared-lateral distance between the baseline and a DLS. */
     double lateral_distance_squared(const dls& dls) const;
+    /**
+     * @brief lateral distance between two baselines.
+     * @param[in] baseline: another baseline.
+     * @return the lateral disntace between this baseline and another baseline.
+     * @note the lateral distance is defined as the the square-root of
+     *       the squared-distance integrated along with the baseline and
+     *       devided by the length of the baseline.
+     */
     double lateral_distance(const baseline& baseline) const;
     /** squared-lateral distance between two baselines. */
     double lateral_distance_squared(const baseline& baseline) const;
 
+    /**
+     * @brief gap between this baseline and a DLS.
+     * @param[in] dls: a directed line segment.
+     * @return a float value (>0); zero if the projection of the DLS onto
+     *         this baseline is overlapped with this baseline. Otherwise,
+     *         the gap-length in units of the baseline length is returned.
+     */
     double gap_length(const dls& dls) const;
+    /**
+     * @brief gap between two baselines.
+     * @param[in] baseline: another baseline.
+     * @return a float value (>0); zero if the projection of the baseline
+     *         on this baseline is overlapped with this baseline. Otherwise,
+     *         the gap-length in units of the baseline length is returned.
+     */
     double gap_length(const baseline& baseline) const;
 
+    /**
+     * @brief overlap between this baseline and a DLS.
+     * @param[in] dls: a directed line segment.
+     * @return a float value [0,1]; unity if the projection of the DLS
+     *         onto this baseline is completely contained in this baseline.
+     *         Otherwise, a fraction of the overlapped is returned.
+     */
     double overlap_length(const dls& dls) const;
+    /**
+     * @brief overlap between this baseline and another baseline.
+     * @param[in] baseline: another baseline.
+     * @return a float value [0,1]; unity if the projection of the baseline
+     *         onto this baseline is completely contained in this baseline.
+     *         Otherwise, a fraction of the overlapped is returned.
+     */
     double overlap_length(const baseline& baseline) const;
 
     /** debug function */
     void dprint() const;
 
+    /**
+     * @brief merge two baselines.
+     * @param[in] first: the first baseline.
+     * @parma[in] second: the second baseline.
+     * @return merged baseline, which contains all the members contained
+     *         in the two baselines.
+     */
     friend const baseline
     merge_baseline(const baseline& first, const baseline& second);
-  private:
-    std::set<index_t> _elements;
-    double _x0,_y0,_z0,_x1,_y1,_z1;
-    double _pa, _r, _l, _ncx, _ncy, _ncz;
-    matrix4x4<double> _f;
 
+  private:
+    std::set<index_t> _elements; /** container of DLS. */
+    double _x0,_y0,_z0;          /** first vertex */
+    double _x1,_y1,_z1;          /** second vertex */
+    double _r;                   /** radius */
+    double _l;                   /** length */
+    double _pa;                  /** position angle */
+    double _ncx, _ncy, _ncz;     /** variables to calculate baseline center */
+    matrix4x4<double> _f;        /** matrix for updating parameters */
+
+    /** calculate projected root onto the baseline. */
     double root_position(const vector3<double>& v) const;
 
+    /** update internal matrix with appended DLS. */
     void update_matrix(const dls& dls);
+    /** update baseline parameters using internal matrix */
     void update_direction();
+    /** update _r, _l, and _pa */
     void update_parameters();
   };
 
@@ -231,25 +382,63 @@ namespace fdlsgm {
   template <index_t N>
   class accumulator {
   public:
+    /**
+     * @brief construct an empty accumulator.
+     */
     accumulator();
+    /**
+     * @brief construct an empty accumulator.
+     * @parma[in] reserve: reserved size of internal vector.
+     */
     accumulator(const size_t& reserve);
 
+    /**
+     * @brief number of directed line segments.
+     * @return the number of the inserted directed line segments.
+     */
     const size_t count_segment() const;
+    /**
+     * @brief number of baselines.
+     * @return the current number of the generated baselines.
+     */
     const size_t count_baseline() const;
 
+    /**
+     * @brief insert a directed line segment.
+     * @param[in] dls: a directed line segment.
+     * @param[in] arg_limit0: tolerance in argument angle in radian.
+     * @param[in] arg_limitL: tolerance in argument angle in radian.
+     * @param[in] dist_limit: tolerance in lateral distance.
+     * @param[in] gap_limit: tolerance in gap length [0,1].
+     */
     void insert(const dls& dls,
-                const double& arg_limit0 = 30.0*M_PI/180.0,
-                const double& arg_limitL = 10.0*M_PI/180.0,
+                const double& arg_limit0 = 10.0*M_PI/180.0,
+                const double& arg_limitL = 20.0*M_PI/180.0,
                 const double& dist_limit = 3.0,
                 const double& gap_limit  = 0.5,
                 const index_t& range     = 5);
 
-    void reallocate(const double& arg_limit0 = 30.0*M_PI/180.0,
-                    const double& arg_limitL = 10.0*M_PI/180.0,
+    /**
+     * @brief assign registered DLSs into baselines until converged.
+     * @param[in] arg_limit0: tolerance in argument angle in radian.
+     * @param[in] arg_limitL: tolerance in argument angle in radian.
+     * @param[in] dist_limit: tolerance in lateral distance.
+     * @param[in] gap_limit: tolerance in gap length [0,1].
+     */
+    void reallocate(const double& arg_limit0 = 10.0*M_PI/180.0,
+                    const double& arg_limitL = 20.0*M_PI/180.0,
                     const double& dist_limit = 3.0,
                     const double& gap_limit  = 0.5,
                     const index_t& range     = 5);
 
+    /**
+     * @brief merge similar baselines
+     * @param[in] arg_limit0: tolerance in argument angle in radian.
+     * @param[in] arg_limitL: tolerance in argument angle in radian.
+     * @param[in] dist_limit: tolerance in lateral distance.
+     * @param[in] gap_limit: tolerance in gap length [0,1].
+     * @param[in] drop_limit: threshold of the member size to drop baselines.
+     */
     void coalesce(const double& arg_limit0 = 10.0*M_PI/180.0,
                   const double& arg_limitL = 10.0*M_PI/180.0,
                   const double& dist_limit = 1.0,
@@ -260,23 +449,37 @@ namespace fdlsgm {
     /** debug function */
     void dprint(const size_t& limit = 0) const;
 
+    /**
+     * @brief obtain reference to the n-th baseline.
+     * @param[in] n: sequential number of the baseline.
+     * @return a constant reference to the n-th baseline.
+     */
     const baseline& operator[](const index_t& n) const;
   private:
+    /** an alias to connect two indexes. */
+    typedef std::pair<index_t,index_t> connector;
+    /** width of internal position angle bins. */
     const double tics = 2.0*M_PI/N;
-    std::vector<dls> _elements;
-    std::vector<baseline> _baselines;
+    /** object to map position angle -> baselines. */
     std::unordered_multimap<index_t, index_t> _connector;
 
-    baseline& get(const index_t& n) const;
+    std::vector<dls> _elements;        /** container of DLSs. */
+    std::vector<baseline> _baselines;  /** container of baselines. */
 
+    /** create and push a baseline into internal container. */
     void push_baseline(const index_t& dls_index, const dls& dls);
+    /** push a baseline into internal container. */
     void push_baseline(const baseline& baseline);
 
-    std::list<index_t> pop(const index_t& pa_index, const index_t& range);
-    std::list<index_t> pop(const double& pa, const index_t& range);
+    /** request a list of baselines around index of position angle */
+    std::list<index_t> query(const index_t& pa_index, const index_t& range);
+    /** request a list of baselines around position angle */
+    std::list<index_t> query(const double& pa, const index_t& range);
 
+    /** drop a mapping specified with pa_index and baseline_index. */
     void drop(const index_t& pa_index, const index_t& baseline_index);
 
+    /** calculate index of position angle */
     const index_t index(const double& pa) const;
   };
 
@@ -320,7 +523,7 @@ namespace fdlsgm {
     _elements.push_back(dls);
     const index_t idx = _elements.size()-1;
     const double pa = dls.pa();
-    const auto& baseline_index = pop(pa, range);
+    const auto& baseline_index = query(pa, range);
     bool appended = false;
 
     for (auto& n: baseline_index) {
@@ -366,7 +569,7 @@ namespace fdlsgm {
     while (true) {
       for (index_t idx=0; idx<n_elements; idx++) {
         const auto& dls = _elements[idx];
-        const auto& baseline_index = pop(dls.pa(), range);
+        const auto& baseline_index = query(dls.pa(), range);
 
         for (auto& n: baseline_index) {
           baseline& b = _baselines[n];
@@ -410,7 +613,7 @@ namespace fdlsgm {
       if (done.find(i) != done.end()) continue;
       done.insert(i);
       baseline b(_baselines[i]);
-      const auto& baseline_index = pop(b.pa(), range);
+      const auto& baseline_index = query(b.pa(), range);
       for (auto& n: baseline_index) {
         const baseline& x = _baselines[n];
         if (i==n || done.find(n) != done.end()) continue;
@@ -453,13 +656,6 @@ namespace fdlsgm {
   }
 
   template<index_t N>
-  baseline&
-  accumulator<N>::get(const index_t& n) const
-  {
-    return _baselines[n];
-  }
-
-  template<index_t N>
   void
   accumulator<N>::push_baseline(const index_t& n, const dls& dls)
   {
@@ -478,7 +674,7 @@ namespace fdlsgm {
 
   template<index_t N>
   std::list<index_t>
-  accumulator<N>::pop(const index_t& pa_index, const index_t& range)
+  accumulator<N>::query(const index_t& pa_index, const index_t& range)
   {
     std::list<index_t> ret;
     for (index_t i=pa_index-range; i<pa_index+range; i++) {
@@ -490,9 +686,9 @@ namespace fdlsgm {
   }
   template<index_t N>
   std::list<index_t>
-  accumulator<N>::pop(const double& pa, const index_t& range)
+  accumulator<N>::query(const double& pa, const index_t& range)
   {
-    return pop(index(pa), range);
+    return query(index(pa), range);
   }
 
   template<index_t N>
