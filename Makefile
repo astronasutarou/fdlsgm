@@ -9,9 +9,9 @@ OBJECT := $(patsubst %.cc,%.o,$(SOURCE))
 
 .PHONY: clean
 
-all: test/sample_xyt
+all: test/sample_xyt test/sample_xyz
 
-test/sample_xyt: test/sample_xyt.cc $(OBJECT) $(HEADER)
+test/sample_%: test/sample_%.cc $(OBJECT) $(HEADER)
 	$(CXX) -o $@ $< $(OBJECT)
 
 .cc.o: $(HEADER)
