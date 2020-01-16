@@ -47,6 +47,40 @@ namespace fdlsgm {
   /** handler of DLS and baseline, N is the size of internal array. */
   template <index_t N> class accumulator;
 
+  /**
+   * @brief parameter set for find segments.
+   *
+   * These parameters used in accumulator::insert, accumulator::reallocate,
+   * and accumulator::coalesce, accordingly in find_segments. The meaning
+   * of each parameter is as follows:
+   *
+   *   - argment_limit_base: tolerance in argument angle in radian.
+   *   - argment_limit_element: tolerance in argument angle in radian.
+   *   - distance_limit: tolerance in lateral distance.
+   *   - gap_limit: tolerance in gap length [0,1].
+   *   - size_limit: threshold of the member size to ignore baselines.
+   *
+   * @note The parameter `size_limit` is used neither in accumulator::insert
+   *       nor accumulator::reallocate.
+   */
+  typedef struct {
+    double argument_limit_base;
+    double argument_limit_element;
+    double distance_limit;
+    double gap_limit;
+    size_t size_limit;
+  } parameter;
+
+  /** default parameter set for accumulator::insert. */
+  constexpr parameter default_param_insert = {
+    10.0*M_PI/180.0, 20.0*M_PI/180.0, 3.0, 0.5, 0 };
+  /** default parameter set for accumulator::reallocate. */
+  constexpr parameter default_param_reallocate = {
+    10.0*M_PI/180.0, 20.0*M_PI/180.0, 3.0, 0.5, 0 };
+  /** default parameter set for accumulator::coalesce. */
+  constexpr parameter default_param_coalesce = {
+    10.0*M_PI/180.0, 10.0*M_PI/180.0, 1.0, 0.5, 3 };
+
   /** line segment defined by two vertices. */
   template <class T> using segment = std::array<vector3<T>, 2>;
 
@@ -406,42 +440,37 @@ namespace fdlsgm {
     /**
      * @brief insert a directed line segment.
      * @param[in] dls: a directed line segment.
-     * @param[in] arg_limit0: tolerance in argument angle in radian.
-     * @param[in] arg_limitL: tolerance in argument angle in radian.
-     * @param[in] dist_limit: tolerance in lateral distance.
-     * @param[in] gap_limit: tolerance in gap length [0,1].
+     * @param[in] param: parameters for baseline matching.
+     *   - argment_limit_base: tolerance in argument angle in radian.
+     *   - argment_limit_element: tolerance in argument angle in radian.
+     *   - distance_limit: tolerance in lateral distance.
+     *   - gap_limit: tolerance in gap length [0,1].
+     *   - size_limit: not used.
      */
     void insert(const dls& dls,
-                const double& arg_limit0 = 10.0*M_PI/180.0,
-                const double& arg_limitL = 20.0*M_PI/180.0,
-                const double& dist_limit = 3.0,
-                const double& gap_limit  = 0.5);
+                const parameter& param = default_param_insert);
 
     /**
      * @brief assign registered DLSs into baselines until converged.
-     * @param[in] arg_limit0: tolerance in argument angle in radian.
-     * @param[in] arg_limitL: tolerance in argument angle in radian.
-     * @param[in] dist_limit: tolerance in lateral distance.
-     * @param[in] gap_limit: tolerance in gap length [0,1].
+     * @param[in] param: parameters for baseline matching.
+     *   - argment_limit_base: tolerance in argument angle in radian.
+     *   - argment_limit_element: tolerance in argument angle in radian.
+     *   - distance_limit: tolerance in lateral distance.
+     *   - gap_limit: tolerance in gap length [0,1].
+     *   - size_limit: not used.
      */
-    void reallocate(const double& arg_limit0 = 10.0*M_PI/180.0,
-                    const double& arg_limitL = 20.0*M_PI/180.0,
-                    const double& dist_limit = 3.0,
-                    const double& gap_limit  = 0.5);
+    void reallocate(const parameter& param = default_param_reallocate);
 
     /**
      * @brief merge similar baselines
-     * @param[in] arg_limit0: tolerance in argument angle in radian.
-     * @param[in] arg_limitL: tolerance in argument angle in radian.
-     * @param[in] dist_limit: tolerance in lateral distance.
-     * @param[in] gap_limit: tolerance in gap length [0,1].
-     * @param[in] drop_limit: threshold of the member size to drop baselines.
+     * @param[in] param: parameters for baseline matching.
+     *   - argment_limit_base: tolerance in argument angle in radian.
+     *   - argment_limit_element: tolerance in argument angle in radian.
+     *   - distance_limit: tolerance in lateral distance.
+     *   - gap_limit: tolerance in gap length [0,1].
+     *   - size_limit: threshold of the member size to ignore baselines.
      */
-    void coalesce(const double& arg_limit0 = 10.0*M_PI/180.0,
-                  const double& arg_limitL = 10.0*M_PI/180.0,
-                  const double& dist_limit = 1.0,
-                  const double& gap_limit  = 0.5,
-                  const size_t& drop_limit = 3);
+    void coalesce(const parameter& param = default_param_coalesce);
 
     /** debug function */
     void dprint(const size_t& limit = 0) const;
@@ -509,14 +538,14 @@ namespace fdlsgm {
   template<index_t N>
   void
   accumulator<N>::insert(const dls& dls,
-                         const double& arg_limit0,
-                         const double& arg_limitL,
-                         const double& dist_limit,
-                         const double& gap_limit)
+                         const parameter& param)
   {
-    const double dist_limit_sq = dist_limit*dist_limit;
+    const double& arg_limit_b = param.argument_limit_base;
+    const double& arg_limit_e = param.argument_limit_element;
+    const double  dist_limit_sq = param.distance_limit*param.distance_limit;
+    const double& gap_limit = param.gap_limit;
     const index_t range =
-      clamp((index_t)std::ceil((arg_limit0+arg_limitL)/tics),0L,N/2);
+      clamp((index_t)std::ceil((arg_limit_b+arg_limit_e)/tics),0L,N/2);
     const double pa = dls.pa();
 
     _elements.push_back(dls);
@@ -527,7 +556,7 @@ namespace fdlsgm {
     for (auto& n: baseline_index) {
       baseline& b = _baselines[n];
       const double arg_limit =
-        arg_limit0 + arg_limitL/std::sqrt(b.length());
+        arg_limit_b + arg_limit_e/std::sqrt(b.length());
       const double d = b.argument(dls);
       if (d < arg_limit) {
         const double g = b.gap_length(dls);
@@ -553,15 +582,15 @@ namespace fdlsgm {
 
   template<index_t N>
   void
-  accumulator<N>::reallocate(const double& arg_limit0,
-                             const double& arg_limitL,
-                             const double& dist_limit,
-                             const double& gap_limit)
+  accumulator<N>::reallocate(const parameter& param)
   {
     const index_t n_elements = count_segment();
-    const double dist_limit_sq = dist_limit*dist_limit;
+    const double& arg_limit_b = param.argument_limit_base;
+    const double& arg_limit_e = param.argument_limit_element;
+    const double  dist_limit_sq = param.distance_limit*param.distance_limit;
+    const double& gap_limit = param.gap_limit;
     const index_t range =
-      clamp((index_t)std::ceil((arg_limit0+arg_limitL)/tics),0L,N/2);
+      clamp((index_t)std::ceil((arg_limit_b+arg_limit_e)/tics),0L,N/2);
 
     bool updated = false;
     size_t counter(0);
@@ -572,8 +601,8 @@ namespace fdlsgm {
 
         for (auto& n: baseline_index) {
           baseline& b = _baselines[n];
-          const double arg_limit = arg_limit0
-            + arg_limitL/std::sqrt(b.length());
+          const double arg_limit =
+            arg_limit_b + arg_limit_e/std::sqrt(b.length());
           const double d = b.argument(dls);
           if (d < arg_limit) {
             const double g = b.gap_length(dls);
@@ -595,19 +624,19 @@ namespace fdlsgm {
 
   template<index_t N>
   void
-  accumulator<N>::coalesce(const double& arg_limit0,
-                           const double& arg_limitL,
-                           const double& dist_limit,
-                           const double& gap_limit,
-                           const size_t& drop_limit)
+  accumulator<N>::coalesce(const parameter& param)
   {
     std::set<index_t> done;
     std::vector<baseline> tmp_baseline;
     std::unordered_multimap<index_t, index_t> tmp_connector;
-    const double dist_limit_sq = dist_limit*dist_limit;
     const index_t n_elements = count_baseline();
+    const double& arg_limit_b = param.argument_limit_base;
+    const double& arg_limit_e = param.argument_limit_element;
+    const double  dist_limit_sq = param.distance_limit*param.distance_limit;
+    const double& gap_limit = param.gap_limit;
+    const size_t& size_limit = param.size_limit;
     const index_t range =
-      clamp((index_t)std::ceil((arg_limit0+arg_limitL)/tics),0L,N/2);
+      clamp((index_t)std::ceil((arg_limit_b+arg_limit_e)/tics),0L,N/2);
 
     tmp_baseline.reserve(n_elements);
     for (index_t i=0; i<n_elements; i++) {
@@ -618,9 +647,9 @@ namespace fdlsgm {
       for (auto& n: baseline_index) {
         const baseline& x = _baselines[n];
         if (i==n || done.find(n) != done.end()) continue;
-        if (x.size() < drop_limit) { done.insert(n); continue; }
-        const double arg_limit = arg_limit0
-          + arg_limitL/std::sqrt(x.length());
+        if (x.size() < size_limit) { done.insert(n); continue; }
+        const double arg_limit =
+          arg_limit_b + arg_limit_e/std::sqrt(x.length());
         const double d = b.argument(x);
         if (d < arg_limit) {
           const double g = b.gap_length(x);
@@ -628,10 +657,8 @@ namespace fdlsgm {
             const double l = b.lateral_distance_squared(x);
             if (l < dist_limit_sq) {
               if (DEBUG_MESSAGE) {
-                printf("# merge[%04lx] "
-                       "(%6.4lf,%6.4f,%6.4f) [%ld+%ld]\n",
-                       n,d/arg_limit,l/dist_limit,g/gap_limit,
-                       b.size(),x.size());
+                printf("# merge[%04lx] (%6.4lf,%6.4f,%6.4f)\n",
+                       n,d/arg_limit,l/dist_limit_sq,g/gap_limit);
               }
               drop(index(x.pa()), n);
               b = merge_baseline(b,x);
