@@ -3,7 +3,7 @@
 set xr [-1250:1250]
 set yr [-1250:1250]
 
-FILENAME='sample_output.txt'
+FILENAME='sample_xyt_output.txt'
 set size ratio -1
 set view equal xy
 set view 0,0
