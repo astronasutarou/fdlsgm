@@ -1,3 +1,9 @@
+/**
+ * @file sample_xyt.cc
+ * @brief test on a 2000x2000 field with 10 frames.
+ * @author Ryou Ohsawa
+ * @year 2020
+ */
 #include "fdlsgm.h"
 
 #include<ctime>
@@ -29,29 +35,36 @@ main(int argn, char** argv)
     const double dx = velocity(gen);
     const double dy = velocity(gen);
     for (size_t ie=0; ie<n_elem; ie++) {
-      const double x = x0+dx*ie, y = y0+dy*ie, z = (double)ie;
-      const double x1 = scatter(gen), y1 = scatter(gen);
-      const double x2 = scatter(gen), y2 = scatter(gen);
-      accumul.insert(fdlsgm::dls({x1+x,y1+y,z},{x2+x+dx,y2+y+dy,z+1}));
+      const double x1 = x0+dx*ie+scatter(gen);
+      const double y1 = y0+dy*ie+scatter(gen);
+      const double z1 = (double)ie;
+      const double x2 = x0+dx*(ie+1)+scatter(gen);
+      const double y2 = y0+dy*(ie+1)+scatter(gen);
+      const double z2 = (double)ie+1.0;
+      accumul.insert(fdlsgm::dls({x1,y1,z1},{x2,y2,z2}));
     }
   }
   for (size_t ig=0; ig<n_obstacle; ig++) {
-    const double x = location(gen);
-    const double y = location(gen);
+    const double x0 = location(gen);
+    const double y0 = location(gen);
     for (size_t ie=0; ie<n_elem; ie++) {
-      const double z = (double)ie;
-      const double x1 = 5*scatter(gen), y1 = 5*scatter(gen);
-      const double x2 = 5*scatter(gen), y2 = 5*scatter(gen);
-      accumul.insert(fdlsgm::dls({x1+x,y1+y,z},{x2+x,y2+y,z+1}));
+      const double x1 = x0+5*scatter(gen);
+      const double y1 = y0+5*scatter(gen);
+      const double z1 = (double)ie;
+      const double x2 = x0+5*scatter(gen);
+      const double y2 = y0+5*scatter(gen);
+      const double z2 = (double)ie+1.0;
+      accumul.insert(fdlsgm::dls({x1,y1,z1},{x2,y2,z2}));
     }
   }
   for (size_t id=0; id<n_distracter; id++) {
-    const double x0 = location(gen);
-    const double y0 = location(gen);
-    const double z0 = (location(gen)+1000.)/2000.*n_elem;
-    const double dx = velocity(gen);
-    const double dy = velocity(gen);
-    accumul.insert(fdlsgm::dls({x0,y0,z0},{x0+dx,y0+dy,z0+1.0}));
+    const double x1 = location(gen);
+    const double y1 = location(gen);
+    const double z1 = (location(gen)+1000.)/2000.*n_elem;
+    const double x2 = x1+velocity(gen);
+    const double y2 = y1+velocity(gen);
+    const double z2 = z1+1.0;
+    accumul.insert(fdlsgm::dls({x1,y1,z1},{x2,y2,z2}));
   }
   clock_t tic0 = clock();
   accumul.reallocate();
