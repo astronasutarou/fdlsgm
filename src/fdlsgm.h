@@ -81,6 +81,18 @@ namespace fdlsgm {
   constexpr parameter default_param_coalesce = {
     10.0*M_PI/180.0, 10.0*M_PI/180.0, 1.0, 0.5, 3 };
 
+  /**
+   * @brief find baseline from a set of directed line segments.
+   * @param[in] pool: a set of directed line segments.
+   * @return a set of baselines found in the pool.
+   */
+  const std::vector<baseline>
+  find_segments(const std::vector<dls>& pool,
+                const size_t& size_threshold = 6,
+                const parameter& param_insert = default_param_insert,
+                const parameter& param_reallocate = default_param_reallocate,
+                const parameter& param_coalesce = default_param_coalesce);
+
   /** line segment defined by two vertices. */
   template <class T> using segment = std::array<vector3<T>, 2>;
 
