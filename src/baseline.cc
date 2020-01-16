@@ -91,12 +91,6 @@ namespace fdlsgm {
   double baseline::ey() const { return dy()/_l; }
   double baseline::ez() const { return dz()/_l; }
 
-  double baseline::pa() const { return _pa; }
-  double baseline::radius() const { return _r; }
-  double baseline::length() const { return _l; }
-
-  size_t baseline::size() const { return _elements.size(); }
-
   const segment<double>
   baseline::vertices() const
   {
@@ -106,6 +100,20 @@ namespace fdlsgm {
 
   const vector3<double>
   baseline::unit_vector() const { return { ex(), ey(), ex() }; }
+
+  double baseline::pa() const { return _pa; }
+  double baseline::radius() const { return _r; }
+  double baseline::length() const { return _l; }
+
+  size_t baseline::size() const { return _elements.size(); }
+
+  std::list<index_t>
+  baseline::elements() const
+  {
+    std::list<index_t> elements;
+    for (auto& e: _elements) elements.push_back(e);
+    return elements;
+  }
 
   double
   baseline::dot(const dls& dls) const
@@ -117,7 +125,6 @@ namespace fdlsgm {
   {
     return dx()*bl.dx()+dy()*bl.dy()+dz()*bl.dz();
   }
-
 
   double
   baseline::argument(const dls& dls) const
@@ -342,7 +349,6 @@ namespace fdlsgm {
     _r  = std::sqrt(dx()*dx()+dy()*dy());
     _pa = std::atan2(-dx(), dy());
   }
-
 
   const baseline
   merge_baseline(const baseline& b0, const baseline& b1)

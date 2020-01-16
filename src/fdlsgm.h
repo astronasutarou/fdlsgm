@@ -299,6 +299,12 @@ namespace fdlsgm {
     size_t size() const;
 
     /**
+     * @brief obtain a list of DLS ID-numbers.
+     * @return a list of the ID-numbsers of the DLS members.
+     */
+    std::list<index_t> elements() const;
+
+    /**
      * @brief dot product of this baseline and a DLS.
      * @param[in] dls: a directed line segment.
      * @return the dot product of this baseline and a DLS.
