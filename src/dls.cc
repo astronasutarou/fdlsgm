@@ -8,12 +8,14 @@
 
 
 namespace fdlsgm {
+  dls::dls()
+    : dls(0.0,0.0,0.0,0.0,0.0,1.0) {}
 
   dls::dls(const vector3<double>& __v0, const vector3<double>& __v1)
     : dls(__v0[0], __v0[1], __v0[2], __v1[0], __v1[1], __v1[2]) {}
 
-  dls::dls(const double __x0, const double __y0, const double __z0,
-           const double __x1, const double __y1, const double __z1)
+  dls::dls(const double& __x0, const double& __y0, const double& __z0,
+           const double& __x1, const double& __y1, const double& __z1)
     : _x0(__x0),_y0(__y0),_z0(__z0),_x1(__x1),_y1(__y1),_z1(__z1),
       _r(std::sqrt(dx()*dx()+dy()*dy())),
       _l(std::sqrt(dx()*dx()+dy()*dy()+dz()*dz())),
@@ -22,7 +24,6 @@ namespace fdlsgm {
     if (_l <= std::numeric_limits<double>::epsilon())
       throw std::invalid_argument("the length of dls is too small.");
   }
-
 
   double dls::x0() const { return _x0; }
   double dls::y0() const { return _y0; }

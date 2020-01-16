@@ -112,6 +112,11 @@ namespace fdlsgm {
   class dls {
   public:
     /**
+     * @brief constuct a DLS with [0,0,0] to [0,0,1].
+     */
+    dls();
+
+    /**
      * @brief constuct a DLS with a pair of three-dimensional vectors.
      * @param[in] v1: the first vertex of the DLS.
      * @param[in] v2: the second vertex of the DLS.
@@ -128,8 +133,8 @@ namespace fdlsgm {
      * @param[in] y2: y-coordinate of the second vertex.
      * @param[in] z2: z-coordinate of the second vertex.
      */
-    dls(const double x1, const double y1, const double z1,
-        const double x2, const double y2, const double z2);
+    dls(const double& x1, const double& y1, const double& z1,
+        const double& x2, const double& y2, const double& z2);
 
     double x0() const; /** x-coordinate of the first vertex. */
     double y0() const; /** y-coordinate of the first vertex. */
@@ -209,11 +214,11 @@ namespace fdlsgm {
     void dprint() const;
 
   private:
-    const double _x0, _y0, _z0; /** first vertex  */
-    const double _x1, _y1, _z1; /** second vertex */
-    const double _r;            /** radius */
-    const double _l;            /** length */
-    const double _pa;           /** position angle */
+    double _x0, _y0, _z0; /** first vertex  */
+    double _x1, _y1, _z1; /** second vertex */
+    double _r;            /** radius */
+    double _l;            /** length */
+    double _pa;           /** position angle */
   };
 
 
