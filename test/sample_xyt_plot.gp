@@ -21,5 +21,4 @@ splot \
   u 1:2:3:($4-$1):($5-$2):($6-$3) w vec nohead lc 0 lw 0.5 not,\
   for [n=100:399] FILENAME i 0 ev ::(10*n)::(10*n+9) \
   u 4:5:6 w p pt 2 ps 0.7 lc 0 not,\
-  FILENAME i 1 u 1:2:3:($4-$1):($5-$2):($6-$3) w vec lw 1 lc 7 not, \
-  FILENAME i 1 u 1:2:(-1):($4-$1):($5-$2):(0) w vec lw 3 lc 2 not
+  FILENAME i 1 u 1:2:3:($4-$1):($5-$2):($6-$3) w vec lw 2 lc 7 not
