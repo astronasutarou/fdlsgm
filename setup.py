@@ -6,17 +6,25 @@ from distutils.extension import Extension
 from distutils.dist import Distribution
 import os,sys,re
 
-version = '0.1'
-description = ''
-long_description = ''
+
+with open('README.md', 'r') as fd:
+  version = '0.1'
+  author = 'Ryou Ohsawa',
+  email = 'ohsawa@ioa.s.u-tokyo.ac.jp',
+  description = 'FDLSGM: Fast Directed Line Segment Grouping Method'
+  long_description = fd.read()
+  license = 'MIT'
 
 classifiers = [
-  'Development Status :: ? - Development/Unstable',
-  'Programming Language :: Python :: 2',
-  'License :: OSI Approved :: GNU Lesesr General Public License v3 '
-  'or  later (LGPLv3+)',
-  'Topic :: Scientific/Engineering :: Astronomy',
-  'Intended Audience :: Science/Research']
+  'Development Status :: 3 - Alpha',
+  'Environment :: Console',
+  'Intended Audience :: Science/Research',
+  'License :: OSI Approved :: MIT License',
+  'Operating System :: POSIX :: Linux',
+  'Programming Language :: Python :: 3',
+  'Programming Language :: Python :: 3.7',
+  'Programming Language :: Python :: Implementation :: CPython',
+  'Topic :: Scientific/Engineering :: Astronomy']
 
 if os.path.exists('fdlsgm.pyx'):
   USE_CYTHON = True
@@ -54,13 +62,15 @@ if __name__ == '__main__':
   setup(
     name='fdlsgm',
     version=version,
+    author=author,
+    author_email=email,
+    maintainer=author,
+    maintainer_email=email,
     description=description,
     long_description=long_description,
-    license='LGPLv3',
-    platforms=['POSIX',],
+    long_description_content_type='test/markdown',
+    url='https://bitbucket.org/ryou_ohsawa/fdlsgm/src/master/',
+    license=license,
     classifiers=classifiers,
-    url='',
-    author='Ryou Ohsawa',
-    author_email='ohsawa@ioa.s.u-tokyo.ac.jp',
-    requires=['numpy'],
+    install_requires=['numpy',],
     ext_modules=extensions)
