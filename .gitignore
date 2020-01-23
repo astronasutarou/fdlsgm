@@ -1,4 +1,6 @@
+MANIFEST
 build/
+dist/
 
 *.so
 *.o

@@ -68,9 +68,8 @@ if __name__ == '__main__':
     maintainer_email=email,
     description=description,
     long_description=long_description,
-    long_description_content_type='test/markdown',
     url='https://bitbucket.org/ryou_ohsawa/fdlsgm/src/master/',
     license=license,
     classifiers=classifiers,
-    install_requires=['numpy',],
+    requires=['numpy',],
     ext_modules=extensions)
