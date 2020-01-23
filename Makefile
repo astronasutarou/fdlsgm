@@ -7,7 +7,7 @@ HEADER := src/fdlsgm.h src/linalg.h
 SOURCE := $(wildcard src/*.cc)
 OBJECT := $(patsubst %.cc,%.o,$(SOURCE))
 
-.PHONY: clean pypi
+.PHONY: clean build_pypi upload_pypi
 
 all: test/sample_xyt test/sample_xyz
 
@@ -17,8 +17,11 @@ test/sample_%: test/sample_%.cc $(OBJECT) $(HEADER)
 .cc.o: $(HEADER)
 	$(CXX) -o $@ -c $<
 
-pypi:
+build_pypi:
 	python setup.py sdist bdist_wheel -p manylinux1_x86_64
+
+upload_pypi:
+	twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
 clean:
 	rm -r $(OBJECT)
