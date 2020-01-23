@@ -25,6 +25,16 @@ namespace fdlsgm {
       throw std::invalid_argument("the length of dls is too small.");
   }
 
+  dls::dls(const double* v)
+    : dls(v[0],v[1],v[2],v[3],v[4],v[5])
+  {}
+
+  const dls_view
+  dls::view() const
+  {
+    return dls_view{ {x0(), y0(), z0()}, {x1(), y1(), z1()} };
+  }
+
   double dls::x0() const { return _x0; }
   double dls::y0() const { return _y0; }
   double dls::z0() const { return _z0; }

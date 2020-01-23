@@ -9,7 +9,7 @@
 
 namespace fdlsgm {
 
-  const std::vector<baseline>
+  const std::vector<baseline_view>
   find_segments(const std::vector<dls>& pool,
                 const size_t& size_limit,
                 const parameter& param_insert,
@@ -20,11 +20,34 @@ namespace fdlsgm {
     for (auto& dls: pool) ac.insert(dls);
     ac.reallocate();
     ac.coalesce();
-    std::vector<baseline> ret;
+    std::vector<baseline_view> ret;
     const size_t n = ac.count_baseline();
     for (size_t i=0; i<n; i++) {
       const auto& b = ac[i];
-      if (b.size()>=size_limit) ret.push_back(b);
+      if (b.size()>=size_limit) ret.push_back(b.view());
+    }
+    return ret;
+  }
+  const std::vector<baseline_view>
+  find_segments(const size_t& n_elements,
+                const double* pool,
+                const size_t& size_limit,
+                const parameter& param_insert,
+                const parameter& param_reallocate,
+                const parameter& param_coalesce)
+  {
+    accumulator<360> ac;
+    for (size_t i=0; i<n_elements; i++) {
+      const size_t& n = 6*i;
+      ac.insert(dls(pool+n));
+    }
+    ac.reallocate();
+    ac.coalesce();
+    std::vector<baseline_view> ret;
+    const size_t n = ac.count_baseline();
+    for (size_t i=0; i<n; i++) {
+      const auto& b = ac[i];
+      if (b.size()>=size_limit) ret.push_back(b.view());
     }
     return ret;
   }

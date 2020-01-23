@@ -47,6 +47,38 @@ namespace fdlsgm {
   /** handler of DLS and baseline, N is the size of internal array. */
   template <index_t N> class accumulator;
 
+
+  /**
+   * @brief view of the directed line segment object.
+   *
+   * This struct contains two three-dimensional vectors to denote the
+   * line segment. The first member `v0` is the starting point of the
+   * segment. The second member `v1` is the other end of the segment.
+   * Both members are given in double[3] type.
+   */
+  typedef struct {
+    double v0[3];
+    double v1[3];
+  } dls_view;
+
+  /**
+   * @brief view of the baseline object.
+   *
+   * This struct contains two three-dimensional vectors to denote the
+   * baseline. The first member `v0` is the starting point of the
+   * segment. The second member `v1` is the other end of the segment.
+   * Both members are given in double[3] type. The member `size` is the
+   * number of the DLSs to construct the baseline. The id-numbers of the
+   * DLSs are stored in `elements`.
+   */
+  typedef struct {
+    double v0[3];
+    double v1[3];
+    size_t size;
+    size_t* elements;
+  } baseline_view;
+
+
   /**
    * @brief parameter set for find segments.
    *
@@ -84,10 +116,31 @@ namespace fdlsgm {
   /**
    * @brief find baseline from a set of directed line segments.
    * @param[in] pool: a set of directed line segments.
+   * @param[in] param_insert: parameters for accumulator::insert.
+   * @param[in] param_reallocate: parameters for accumulator::reallocate.
+   * @param[in] param_coalesce: parameters for accumulator::coalesce.
    * @return a set of baselines found in the pool.
    */
-  const std::vector<baseline>
+  const std::vector<baseline_view>
   find_segments(const std::vector<dls>& pool,
+                const size_t& size_threshold = 6,
+                const parameter& param_insert = default_param_insert,
+                const parameter& param_reallocate = default_param_reallocate,
+                const parameter& param_coalesce = default_param_coalesce);
+  /**
+   * @brief find baseline from a set of directed line segments.
+   * @param[in] n_elements a number of line segments in the pool.
+   * @param[in] pool: a set of directed line segments.
+   * @param[in] param_insert: parameters for accumulator::insert.
+   * @param[in] param_reallocate: parameters for accumulator::reallocate.
+   * @param[in] param_coalesce: parameters for accumulator::coalesce.
+   * @return a set of baselines found in the pool.
+   * @note The array pool should contain 6N double elements, where N is the
+           number of the directed line segments.
+   */
+  const std::vector<baseline_view>
+  find_segments(const size_t& n_elements,
+                const double* pool,
                 const size_t& size_threshold = 6,
                 const parameter& param_insert = default_param_insert,
                 const parameter& param_reallocate = default_param_reallocate,
@@ -135,6 +188,17 @@ namespace fdlsgm {
      */
     dls(const double& x1, const double& y1, const double& z1,
         const double& x2, const double& y2, const double& z2);
+    /**
+     * @brief constuct a DLS using C-array.
+     * @param[in] v: an array containing coordinates of vertecies.
+     */
+    dls(const double* v);
+
+    /**
+     * @brief return a view of the DLS.
+     * @return an instance of the struct "dls_view".
+     */
+    const dls_view view() const;
 
     double x0() const; /** x-coordinate of the first vertex. */
     double y0() const; /** y-coordinate of the first vertex. */
@@ -239,6 +303,12 @@ namespace fdlsgm {
      * @param[in] baseline: an original baseline.
      */
     baseline(const baseline& baseline);
+
+    /**
+     * @brief return a view of the baseline.
+     * @return an instance of the struct "baseline_view".
+     */
+    const baseline_view view() const;
 
     /**
      * @brief append a DLS into the baseline.
