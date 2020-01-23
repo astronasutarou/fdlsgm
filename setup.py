@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from glob import glob
-from distutils.core import setup
+from setuptools import setup
 from distutils.extension import Extension
 from distutils.dist import Distribution
 import os,sys,re
@@ -68,8 +68,9 @@ if __name__ == '__main__':
     maintainer_email=email,
     description=description,
     long_description=long_description,
+    long_description_content_type='text/markdown',
     url='https://bitbucket.org/ryou_ohsawa/fdlsgm/src/master/',
     license=license,
     classifiers=classifiers,
-    requires=['numpy',],
+    install_requires=['numpy',],
     ext_modules=extensions)
