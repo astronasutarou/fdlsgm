@@ -230,7 +230,6 @@ def simple_solver_test(
   print('\n\n## baselines')
   for b in baseline:
     print('{} {} {} {} {} {}'.format(*b.vertex0,*b.vertex1))
-    print('# {}'.format(b.elements))
   print('')
   print(param)
   print('#')
