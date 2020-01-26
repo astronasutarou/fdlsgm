@@ -235,4 +235,4 @@ def simple_solver_test(
   print(param)
   print('#')
   print('# found {} segments'.format(len(baseline)))
-  print('# elapsed time: {}ms'.format((t1-t0).microseconds/1e3))
+  print('# elapsed time: {}ms'.format((t1-t0).total_seconds()*1e3))
