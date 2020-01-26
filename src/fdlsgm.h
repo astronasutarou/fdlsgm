@@ -75,7 +75,7 @@ namespace fdlsgm {
     double v0[3];
     double v1[3];
     size_t size;
-    size_t* elements;
+    std::vector<index_t> elements;
   } baseline_view;
 
 

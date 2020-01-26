@@ -21,7 +21,7 @@ cdef extern from 'fdlsgm.h' namespace 'fdlsgm':
     double v0[3]
     double v1[3]
     int size
-    int* elements
+    vec[int] elements
 
   ### Find baselines by Grouping Method.
   cdef const vec[baseline_view] find_segments(
@@ -228,8 +228,9 @@ def simple_solver_test(
   for s in segments:
     print('{} {} {} {} {} {}'.format(*s))
   print('\n\n## baselines')
-  for n,b in enumerate(baseline):
+  for b in baseline:
     print('{} {} {} {} {} {}'.format(*b.vertex0,*b.vertex1))
+    print('# {}'.format(b.elements))
   print('')
   print(param)
   print('#')

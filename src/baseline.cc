@@ -51,10 +51,10 @@ namespace fdlsgm {
   const baseline_view
   baseline::view() const
   {
-    std::vector<size_t> v;
-    for (auto& e: _elements) v.push_back(e);
+    std::vector<index_t> v;
+    for (auto& e: _elements) { v.push_back(e); }
     return baseline_view{
-      {x0(), y0(), z0()}, {x1(), y1(), z1()}, size(), (size_t*)&v };
+      {x0(), y0(), z0()}, {x1(), y1(), z1()}, size(), v };
   }
 
   bool
