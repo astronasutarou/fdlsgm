@@ -1,5 +1,5 @@
 CC     := g++
-TWINE  := twine upload --skip-existing
+TESTPY := --repository-url https://test.pypi.org/legacy/
 LIBS   := -I./src -L./src -lm
 CFLAGS := -std=c++11 -g -Wall -O3
 CXX    := $(CC) $(LIBS) $(CFLAGS)
@@ -22,10 +22,10 @@ build_pypi:
 	python setup.py sdist bdist_wheel -p manylinux1_x86_64
 
 upload_test:
-	$(TWINE) --repository-url https://test.pypi.org/legacy/ dist/*
+	twine upload --skip-existing $(TESTPY) dist/*
 
 upload_pypi:
-	$(TWINE) --skip-existing dist/*
+	twine upload --skip-existing dist/*
 
 clean:
 	rm -r $(OBJECT)
