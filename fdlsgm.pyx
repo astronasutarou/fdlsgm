@@ -161,7 +161,7 @@ def solve(ndarray pool, object param = None):
   if not isinstance(param, solve_parameters):
     raise ValueError('"param" should be an instance of "solve_parameters".')
   cdef vec[baseline_view] result
-  cdef const double[:] view = pool
+  cdef double[:] view = pool
   cdef size_t n_size = len(pool)//6
   cdef size_t limit = param.limit
   cdef parameter param_insert, param_reallocate, param_coalesce

@@ -14,6 +14,7 @@
 #include<cmath>
 #include<limits>
 #include<array>
+#include<vector>
 #include<set>
 #include<list>
 #include<map>
