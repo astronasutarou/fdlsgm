@@ -19,7 +19,13 @@ namespace fdlsgm {
     accumulator<360> ac;
     for (auto& dls: pool) ac.insert(dls, param_insert);
     ac.reallocate(param_reallocate);
-    ac.coalesce(param_coalesce);
+    size_t N = ac.count_baseline();
+    while (true) {
+      ac.coalesce(param_coalesce);
+      size_t tmp = ac.count_baseline();
+      if (tmp == N) break;
+      N = tmp;
+    }
     std::vector<baseline_view> ret;
     const size_t n = ac.count_baseline();
     for (size_t i=0; i<n; i++) {
@@ -42,7 +48,13 @@ namespace fdlsgm {
       ac.insert(dls(pool+n), param_insert);
     }
     ac.reallocate(param_reallocate);
-    ac.coalesce(param_coalesce);
+    size_t N = ac.count_baseline();
+    while (true) {
+      ac.coalesce(param_coalesce);
+      size_t tmp = ac.count_baseline();
+      if (tmp == N) break;
+      N = tmp;
+    }
     std::vector<baseline_view> ret;
     const size_t n = ac.count_baseline();
     for (size_t i=0; i<n; i++) {

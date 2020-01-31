@@ -658,7 +658,7 @@ namespace fdlsgm {
           const double l = b.lateral_distance_squared(dls);
           if (l < dist_limit_sq) {
             if (DEBUG_MESSAGE) {
-              printf("# match[%04lx:%04lx] (%6.4lf,%6.4f,%6.4f)\n",
+              printf("# match[%04lx:%04lx] (d,l,g) = (%6.4lf,%6.4f,%6.4f)\n",
                      idx,n,d/arg_limit,l/dist_limit_sq,g/gap_limit);
             }
             drop(index(b.pa()), n);
@@ -751,8 +751,8 @@ namespace fdlsgm {
             const double l = b.lateral_distance_squared(x);
             if (l < dist_limit_sq) {
               if (DEBUG_MESSAGE) {
-                printf("# merge[%04lx] (%6.4lf,%6.4f,%6.4f)\n",
-                       n,d/arg_limit,l/dist_limit_sq,g/gap_limit);
+                printf("# merge[%04lx & %04lx] (%6.4lf,%6.4f,%6.4f)\n",
+                       i,n,d/arg_limit,l/dist_limit_sq,g/gap_limit);
               }
               drop(index(x.pa()), n);
               b = merge_baseline(b,x);
@@ -767,6 +767,7 @@ namespace fdlsgm {
     }
     _baselines = tmp_baseline;
     _connector = tmp_connector;
+    if (DEBUG_MESSAGE) dprint();
   }
 
 
@@ -843,6 +844,7 @@ namespace fdlsgm {
     printf("## baselines\n");
     size_t cnt(0);
     size_t z = (size_t)&_baselines[0];
+    size_t Z = sizeof(_baselines[0]);
     for (auto& b: _baselines) {
       if (b.size()>=limit) {
         b.dprint(); cnt++;
@@ -855,7 +857,7 @@ namespace fdlsgm {
               const double w = b.overlap_length(x);
               printf("#\t[%04lx]<->[%04lx] "
                      "(d,l,g,w) = (%12.6lf, %12.6lf, %12.6lf %12.6f)\n",
-                     (size_t)&b-z,(size_t)&x-z,d,l,g,w);
+                     ((size_t)&b-z)/Z,((size_t)&x-z)/Z,d,l,g,w);
             }
           }
         }
