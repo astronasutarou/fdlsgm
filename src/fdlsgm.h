@@ -801,7 +801,7 @@ namespace fdlsgm {
   {
     std::list<index_t> ret;
     for (index_t i=pa_index-range; i<pa_index+range; i++) {
-      auto range = _connector.equal_range(i);
+      auto range = _connector.equal_range((N+i)%N);
       for_each(range.first, range.second,
                [&ret](const connector& x){ ret.push_back(x.second); });
     }

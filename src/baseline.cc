@@ -260,10 +260,11 @@ namespace fdlsgm {
     double t0 = root_position(v0), t1 = root_position(v1);
     if (t1<t0) std::swap(t0,t1);
     if (t1< 0.0 || t0> 1.0) return 0.0;
+    if (t0< 0.0 && t1> 1.0) return 1.0;
     if (t0< 0.0 && t1>=0.0) return t1-0.0;
     if (t0>=0.0 && t1> 1.0) return 1.0-t0;
     if (t0> 0.0 && t1< 1.0) return t1-t0;
-    return 1.0;
+    return 0.0;
   }
   double
   baseline::overlap_length(const baseline& bl) const
@@ -274,10 +275,11 @@ namespace fdlsgm {
     double t0 = root_position(v0), t1 = root_position(v1);
     if (t1<t0) std::swap(t0,t1);
     if (t1< 0.0 || t0> 1.0) return 0.0;
+    if (t0< 0.0 && t1> 1.0) return 1.0;
     if (t0< 0.0 && t1>=0.0) return t1-0.0;
     if (t0>=0.0 && t1> 1.0) return 1.0-t0;
     if (t0> 0.0 && t1< 1.0) return t1-t0;
-    return 1.0;
+    return 0.0;
   }
 
   void
