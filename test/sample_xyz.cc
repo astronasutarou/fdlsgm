@@ -72,10 +72,10 @@ main(int argn, char** argv)
   clock_t tic0 = clock();
   accumul.reallocate();
   clock_t tic1 = clock();
-  accumul.coalesce();
+  accumul.merge();
   clock_t tic2 = clock();
   accumul.dprint(5);
   printf("## initialize: %lf sec\n", ((double)tic0-begin)/CLOCKS_PER_SEC);
   printf("## reallocate: %lf sec\n", ((double)tic1-tic0)/CLOCKS_PER_SEC);
-  printf("## coalesce  : %lf sec\n", ((double)tic2-tic1)/CLOCKS_PER_SEC);
+  printf("## merge     : %lf sec\n", ((double)tic2-tic1)/CLOCKS_PER_SEC);
 }

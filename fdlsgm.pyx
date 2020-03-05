@@ -27,7 +27,7 @@ cdef extern from 'fdlsgm.h' namespace 'fdlsgm':
   cdef const vec[baseline_view] find_segments(
     const size_t& n_size, const double* pool,
     const size_t& size_threshold, const parameter& param_insert,
-    const parameter& param_reallocate, const parameter& param_coalesce)
+    const parameter& param_reallocate, const parameter& param_merge)
 
 
 cdef extern from *:
@@ -73,7 +73,7 @@ class baseline(object):
 class parameter_collection(object):
   ''' Parameter collection for procedures.
 
-  The parameter collection for the insert, reallocation, and coalesce
+  The parameter collection for the insert, reallocation, and merge
   procedures inside the `find_segments` function. The meanings of the
   attributes are written below. Note that `size_limit` attribute is not
   used in the insert and reallocation procedures.
@@ -98,7 +98,7 @@ class solve_parameters(object):
 
   The instance contains the parameters for the solver. The attribute `limit`
   is the integer, which determine the minimum size of the baselines. The
-  other attributes --- insert, reallocate, and coalesce --- are the instances
+  other attributes --- insert, reallocate, and merge --- are the instances
   of `parameter_collection`, which contain the sets of parameters for the
   collesponding operations.
 
@@ -106,16 +106,16 @@ class solve_parameters(object):
     limit (int): baselines whose size are smaller than `limit` are dropped.
     insert (list): parameter collection for the "insert" operation.
     reallocate (list): parameter collection for the "reallocate" operation.
-    coalesce (list): parameter collection for the "coalesce" operation.
+    merge (list): parameter collection for the "merge" operation.
   '''
   def __init__(self, limit = 6,
         insert = (10.0*np.pi/180.0, 30.0*np.pi/180.0, 5.0, 0.5, 0),
         reallocate = (10.0*np.pi/180.0, 30.0*np.pi/180.0, 5.0, 0.5, 0),
-        coalesce = (5.0*np.pi/180.0, 10.0*np.pi/180.0, 3.0, 0.5, 3)):
+        merge = (5.0*np.pi/180.0, 10.0*np.pi/180.0, 3.0, 0.5, 3)):
     self.limit = limit
     self.insert = parameter_collection(*insert)
     self.reallocate = parameter_collection(*reallocate)
-    self.coalesce = parameter_collection(*coalesce)
+    self.merge = parameter_collection(*merge)
 
   def __str__(self):
     return ''.join((
@@ -131,11 +131,11 @@ class solve_parameters(object):
         self.reallocate.argument_limit_element,
         self.reallocate.distance_limit,
         self.reallocate.gap_limit, self.reallocate.size_limit),
-      '#   coalesce  : ({:.4f}, {:.4f}, {:.1f}, {:.1f}, {:1d})'.format(
-        self.coalesce.argument_limit_base,
-        self.coalesce.argument_limit_element,
-        self.coalesce.distance_limit,
-        self.coalesce.gap_limit, self.coalesce.size_limit),
+      '#   merge     : ({:.4f}, {:.4f}, {:.1f}, {:.1f}, {:1d})'.format(
+        self.merge.argument_limit_base,
+        self.merge.argument_limit_element,
+        self.merge.distance_limit,
+        self.merge.gap_limit, self.merge.size_limit),
       ))
 
 
@@ -164,14 +164,14 @@ def solve(ndarray pool, object param = None):
   cdef double[:] view = pool
   cdef size_t n_size = len(pool)//6
   cdef size_t limit = param.limit
-  cdef parameter param_insert, param_reallocate, param_coalesce
+  cdef parameter param_insert, param_reallocate, param_merge
   set_parameter(param_insert, param.insert)
   set_parameter(param_reallocate, param.reallocate)
-  set_parameter(param_coalesce, param.coalesce)
+  set_parameter(param_merge, param.merge)
   result = find_segments(
     n_size=n_size, pool=&view[0],
     size_threshold=limit, param_insert=param_insert,
-    param_reallocate=param_reallocate, param_coalesce=param_coalesce)
+    param_reallocate=param_reallocate, param_merge=param_merge)
   baseline = list()
   for n in range(result.size()):
     baseline.append(dump_view(result[n]))

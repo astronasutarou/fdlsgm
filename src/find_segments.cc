@@ -14,12 +14,12 @@ namespace fdlsgm {
                 const size_t& size_limit,
                 const parameter& param_insert,
                 const parameter& param_reallocate,
-                const parameter& param_coalesce)
+                const parameter& param_merge)
   {
     accumulator<360> ac;
     for (auto& dls: pool) ac.insert(dls, param_insert);
     ac.reallocate(param_reallocate);
-    ac.coalesce(param_coalesce);
+    ac.merge(param_merge);
     std::vector<baseline_view> ret;
     const size_t n = ac.count_baseline();
     for (size_t i=0; i<n; i++) {
@@ -34,7 +34,7 @@ namespace fdlsgm {
                 const size_t& size_limit,
                 const parameter& param_insert,
                 const parameter& param_reallocate,
-                const parameter& param_coalesce)
+                const parameter& param_merge)
   {
     accumulator<360> ac;
     for (size_t i=0; i<n_elements; i++) {
@@ -42,7 +42,7 @@ namespace fdlsgm {
       ac.insert(dls(pool+n), param_insert);
     }
     ac.reallocate(param_reallocate);
-    ac.coalesce(param_coalesce);
+    ac.merge(param_merge);
     std::vector<baseline_view> ret;
     const size_t n = ac.count_baseline();
     for (size_t i=0; i<n; i++) {

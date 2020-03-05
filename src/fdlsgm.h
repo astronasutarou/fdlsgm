@@ -84,7 +84,7 @@ namespace fdlsgm {
    * @brief parameter set for find segments.
    *
    * These parameters used in accumulator::insert, accumulator::reallocate,
-   * and accumulator::coalesce, accordingly in find_segments. The meaning
+   * and accumulator::merge, accordingly in find_segments. The meaning
    * of each parameter is as follows:
    *
    *   - argment_limit_base: tolerance in argument angle in radian.
@@ -110,8 +110,8 @@ namespace fdlsgm {
   /** default parameter set for accumulator::reallocate. */
   constexpr parameter default_param_reallocate = {
     10.0*M_PI/180.0, 20.0*M_PI/180.0, 3.0, 0.5, 0 };
-  /** default parameter set for accumulator::coalesce. */
-  constexpr parameter default_param_coalesce = {
+  /** default parameter set for accumulator::merge. */
+  constexpr parameter default_param_merge = {
     10.0*M_PI/180.0, 10.0*M_PI/180.0, 1.0, 0.5, 3 };
 
   /**
@@ -119,7 +119,7 @@ namespace fdlsgm {
    * @param[in] pool: a set of directed line segments.
    * @param[in] param_insert: parameters for accumulator::insert.
    * @param[in] param_reallocate: parameters for accumulator::reallocate.
-   * @param[in] param_coalesce: parameters for accumulator::coalesce.
+   * @param[in] param_merge: parameters for accumulator::merge.
    * @return a set of baselines found in the pool.
    */
   const std::vector<baseline_view>
@@ -127,14 +127,14 @@ namespace fdlsgm {
                 const size_t& size_threshold = 6,
                 const parameter& param_insert = default_param_insert,
                 const parameter& param_reallocate = default_param_reallocate,
-                const parameter& param_coalesce = default_param_coalesce);
+                const parameter& param_merge = default_param_merge);
   /**
    * @brief find baseline from a set of directed line segments.
    * @param[in] n_elements a number of line segments in the pool.
    * @param[in] pool: a set of directed line segments.
    * @param[in] param_insert: parameters for accumulator::insert.
    * @param[in] param_reallocate: parameters for accumulator::reallocate.
-   * @param[in] param_coalesce: parameters for accumulator::coalesce.
+   * @param[in] param_merge: parameters for accumulator::merge.
    * @return a set of baselines found in the pool.
    * @note The array pool should contain 6N double elements, where N is the
            number of the directed line segments.
@@ -145,7 +145,7 @@ namespace fdlsgm {
                 const size_t& size_threshold = 6,
                 const parameter& param_insert = default_param_insert,
                 const parameter& param_reallocate = default_param_reallocate,
-                const parameter& param_coalesce = default_param_coalesce);
+                const parameter& param_merge = default_param_merge);
 
   /** line segment defined by two vertices. */
   template <class T> using segment = std::array<vector3<T>, 2>;
@@ -564,7 +564,7 @@ namespace fdlsgm {
      *   - gap_limit: tolerance in gap length [0,1].
      *   - size_limit: threshold of the member size to ignore baselines.
      */
-    void coalesce(const parameter& param = default_param_coalesce);
+    void merge(const parameter& param = default_param_merge);
 
     /** debug function */
     void dprint(const size_t& limit = 0) const;
@@ -718,7 +718,7 @@ namespace fdlsgm {
 
   template<index_t N>
   void
-  accumulator<N>::coalesce(const parameter& param)
+  accumulator<N>::merge(const parameter& param)
   {
     std::set<index_t> done;
     std::vector<baseline> tmp_baseline;
