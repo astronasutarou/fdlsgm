@@ -792,15 +792,21 @@ namespace fdlsgm {
     std::unordered_map<index_t, comp> best;
     for (auto& b: _baselines) {
       const index_t& i = (index_t)&b;
-      const double L = (double)b.size();
+      // calculate scatter (largest lateral distance)
+      double scatter = 1e-16;
+      for (auto& e: b.elements()) {
+        const auto& d = _elements[e];
+        double s = b.lateral_distance_squared(d);
+        scatter = (scatter>s)?scatter:s;
+      }
       for (auto& e: b.elements()) {
         if (best.find(e) != best.end()) {
           const auto& c = best.at(e);
-          if (c.first < L) {
-            best.emplace(e, comp{L, i});
+          if (c.first > scatter) {
+            best.emplace(e, comp{scatter, i});
           }
         } else {
-          best.emplace(e, comp{L, i});
+          best.emplace(e, comp{scatter, i});
         }
       }
     }
