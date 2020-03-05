@@ -8,7 +8,7 @@ HEADER := src/fdlsgm.h src/linalg.h
 SOURCE := $(wildcard src/*.cc)
 OBJECT := $(patsubst %.cc,%.o,$(SOURCE))
 
-.PHONY: clean build_pypi upload_pypi
+.PHONY: clean build build_pypi upload_test upload_pypi
 
 all: test/sample_xyt test/sample_xyz
 
@@ -17,6 +17,9 @@ test/sample_%: test/sample_%.cc $(OBJECT) $(HEADER)
 
 .cc.o: $(HEADER)
 	$(CXX) -o $@ -c $<
+
+build:
+	python setup.py build_ext --inplace
 
 build_pypi:
 	python setup.py sdist bdist_wheel -p manylinux1_x86_64
