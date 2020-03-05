@@ -320,6 +320,15 @@ namespace fdlsgm {
      */
     bool append(const index_t& n, const dls& dls);
 
+    /**
+     * @brief drop a DLS from the baseline.
+     * @param[in] n: the ID-number of the DLS.
+     * @return true if the DLS is successfully removed from the baseline.
+     *         false if the DLS is not found in the baseline.
+     * @note the baseline remains intact after removing the DLS.
+     */
+    bool drop(const index_t& n);
+
     double x0() const; /** x-coordinate of the first vertex. */
     double y0() const; /** y-coordinate of the first vertex. */
     double z0() const; /** z-coordinate of the first vertex. */
@@ -556,7 +565,7 @@ namespace fdlsgm {
     void update(const parameter& param = default_param_update);
 
     /**
-     * @brief merge similar baselines
+     * @brief merge similar baselines.
      * @param[in] param: parameters for baseline matching.
      *   - argment_limit_base: tolerance in argument angle in radian.
      *   - argment_limit_element: tolerance in argument angle in radian.
@@ -565,6 +574,11 @@ namespace fdlsgm {
      *   - size_limit: threshold of the member size to ignore baselines.
      */
     void merge(const parameter& param = default_param_merge);
+
+    /**
+     * @brief assign a DLS to a unique baseline.
+     */
+    void purify(void);
 
     /** debug function */
     void dprint(const size_t& limit = 0) const;
@@ -723,7 +737,7 @@ namespace fdlsgm {
     std::set<index_t> done;
     std::vector<baseline> tmp_baseline;
     std::unordered_multimap<index_t, index_t> tmp_connector;
-    const index_t n_elements = count_baseline();
+    const index_t n_baselines = count_baseline();
     const double& arg_limit_b = param.argument_limit_base;
     const double& arg_limit_e = param.argument_limit_element;
     const double  dist_limit_sq = param.distance_limit*param.distance_limit;
@@ -732,8 +746,8 @@ namespace fdlsgm {
     const index_t range =
       clamp((index_t)std::ceil((arg_limit_b+arg_limit_e)/tics),0L,N/2);
 
-    tmp_baseline.reserve(n_elements);
-    for (index_t i=0; i<n_elements; i++) {
+    tmp_baseline.reserve(n_baselines);
+    for (index_t i=0; i<n_baselines; i++) {
       if (done.find(i) != done.end()) continue;
       done.insert(i);
       baseline b(_baselines[i]);
@@ -770,6 +784,34 @@ namespace fdlsgm {
     if (DEBUG_MESSAGE) dprint();
   }
 
+  template<index_t N>
+  void
+  accumulator<N>::purify(void)
+  {
+    typedef std::pair<double, index_t> comp;
+    std::unordered_map<index_t, comp> best;
+    for (auto& b: _baselines) {
+      const index_t& i = (index_t)&b;
+      const double L = (double)b.size();
+      for (auto& e: b.elements()) {
+        if (best.find(e) != best.end()) {
+          const auto& c = best.at(e);
+          if (c.first < L) {
+            best.emplace(e, comp{L, i});
+          }
+        } else {
+          best.emplace(e, comp{L, i});
+        }
+      }
+    }
+    for (auto& b: _baselines) {
+      const index_t& i = (index_t)&b;
+      for (auto& e: b.elements()) {
+        const auto& c = best.at(e);
+        if (c.second != i) b.drop(e);
+      }
+    }
+  }
 
   template<index_t N>
   const baseline&

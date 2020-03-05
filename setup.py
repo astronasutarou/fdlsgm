@@ -8,7 +8,7 @@ import os,sys,re
 
 
 with open('README.md', 'r') as fd:
-  version = '0.3.0'
+  version = '0.4.0'
   author = 'Ryou Ohsawa'
   email = 'ohsawa@ioa.s.u-tokyo.ac.jp'
   description = 'FDLSGM: Fast Directed Line Segment Grouping Method'

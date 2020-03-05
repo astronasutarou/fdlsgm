@@ -82,6 +82,12 @@ namespace fdlsgm {
     }
   }
 
+  bool
+  baseline::drop(const index_t& n)
+  {
+    return _elements.erase(n) > 0;
+  }
+
   double baseline::x0() const { return _x0; }
   double baseline::y0() const { return _y0; }
   double baseline::z0() const { return _z0; }

@@ -20,6 +20,7 @@ namespace fdlsgm {
     for (auto& dls: pool) ac.insert(dls, param_insert);
     ac.update(param_update);
     ac.merge(param_merge);
+    ac.purify();
     std::vector<baseline_view> ret;
     const size_t n = ac.count_baseline();
     for (size_t i=0; i<n; i++) {
@@ -43,6 +44,7 @@ namespace fdlsgm {
     }
     ac.update(param_update);
     ac.merge(param_merge);
+    ac.purify();
     std::vector<baseline_view> ret;
     const size_t n = ac.count_baseline();
     for (size_t i=0; i<n; i++) {
