@@ -31,7 +31,7 @@ if os.path.exists('fdlsgm.pyx'):
   filename   = 'fdlsgm.pyx'
 else:
   USE_CYTHON = False
-  filename   = 'fdlsgm.cc'
+  filename   = 'fdlsgm.cpp'
 
 
 if __name__ == '__main__':
