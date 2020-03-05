@@ -27,7 +27,7 @@ cdef extern from 'fdlsgm.h' namespace 'fdlsgm':
   cdef const vec[baseline_view] find_segments(
     const size_t& n_size, const double* pool,
     const size_t& size_threshold, const parameter& param_insert,
-    const parameter& param_remap, const parameter& param_merge)
+    const parameter& param_update, const parameter& param_merge)
 
 
 cdef extern from *:
@@ -98,23 +98,23 @@ class solve_parameters(object):
 
   The instance contains the parameters for the solver. The attribute `limit`
   is the integer, which determine the minimum size of the baselines. The
-  other attributes --- insert, remap, and merge --- are the instances
+  other attributes --- insert, update, and merge --- are the instances
   of `parameter_collection`, which contain the sets of parameters for the
   collesponding operations.
 
   Attributes:
     limit (int): baselines whose size are smaller than `limit` are dropped.
     insert (list): parameter collection for the "insert" operation.
-    remap (list): parameter collection for the "remap" operation.
+    update (list): parameter collection for the "update" operation.
     merge (list): parameter collection for the "merge" operation.
   '''
   def __init__(self, limit = 6,
         insert = (10.0*np.pi/180.0, 30.0*np.pi/180.0, 5.0, 0.5, 0),
-        remap = (10.0*np.pi/180.0, 30.0*np.pi/180.0, 5.0, 0.5, 0),
+        update = (10.0*np.pi/180.0, 30.0*np.pi/180.0, 5.0, 0.5, 0),
         merge = (5.0*np.pi/180.0, 10.0*np.pi/180.0, 3.0, 0.5, 3)):
     self.limit = limit
     self.insert = parameter_collection(*insert)
-    self.remap = parameter_collection(*remap)
+    self.update = parameter_collection(*update)
     self.merge = parameter_collection(*merge)
 
   def __str__(self):
@@ -126,11 +126,11 @@ class solve_parameters(object):
         self.insert.argument_limit_element,
         self.insert.distance_limit,
         self.insert.gap_limit, self.insert.size_limit),
-      '#   remap  : ({:.4f}, {:.4f}, {:.1f}, {:.1f}, {:1d})\n'.format(
-        self.remap.argument_limit_base,
-        self.remap.argument_limit_element,
-        self.remap.distance_limit,
-        self.remap.gap_limit, self.remap.size_limit),
+      '#   update : ({:.4f}, {:.4f}, {:.1f}, {:.1f}, {:1d})\n'.format(
+        self.update.argument_limit_base,
+        self.update.argument_limit_element,
+        self.update.distance_limit,
+        self.update.gap_limit, self.update.size_limit),
       '#   merge  : ({:.4f}, {:.4f}, {:.1f}, {:.1f}, {:1d})'.format(
         self.merge.argument_limit_base,
         self.merge.argument_limit_element,
@@ -164,14 +164,14 @@ def solve(ndarray pool, object param = None):
   cdef double[:] view = pool
   cdef size_t n_size = len(pool)//6
   cdef size_t limit = param.limit
-  cdef parameter param_insert, param_remap, param_merge
+  cdef parameter param_insert, param_update, param_merge
   set_parameter(param_insert, param.insert)
-  set_parameter(param_remap, param.remap)
+  set_parameter(param_update, param.update)
   set_parameter(param_merge, param.merge)
   result = find_segments(
     n_size=n_size, pool=&view[0],
     size_threshold=limit, param_insert=param_insert,
-    param_remap=param_remap, param_merge=param_merge)
+    param_update=param_update, param_merge=param_merge)
   baseline = list()
   for n in range(result.size()):
     baseline.append(dump_view(result[n]))

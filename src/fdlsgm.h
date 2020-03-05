@@ -83,7 +83,7 @@ namespace fdlsgm {
   /**
    * @brief parameter set for find segments.
    *
-   * These parameters used in accumulator::insert, accumulator::remap,
+   * These parameters used in accumulator::insert, accumulator::update,
    * and accumulator::merge, accordingly in find_segments. The meaning
    * of each parameter is as follows:
    *
@@ -94,7 +94,7 @@ namespace fdlsgm {
    *   - size_limit: threshold of the member size to ignore baselines.
    *
    * @note The parameter `size_limit` is used neither in accumulator::insert
-   *       nor accumulator::remap.
+   *       nor accumulator::update.
    */
   typedef struct {
     double argument_limit_base;
@@ -107,8 +107,8 @@ namespace fdlsgm {
   /** default parameter set for accumulator::insert. */
   constexpr parameter default_param_insert = {
     10.0*M_PI/180.0, 20.0*M_PI/180.0, 3.0, 0.5, 0 };
-  /** default parameter set for accumulator::remap. */
-  constexpr parameter default_param_remap = {
+  /** default parameter set for accumulator::update. */
+  constexpr parameter default_param_update = {
     10.0*M_PI/180.0, 20.0*M_PI/180.0, 3.0, 0.5, 0 };
   /** default parameter set for accumulator::merge. */
   constexpr parameter default_param_merge = {
@@ -118,7 +118,7 @@ namespace fdlsgm {
    * @brief find baseline from a set of directed line segments.
    * @param[in] pool: a set of directed line segments.
    * @param[in] param_insert: parameters for accumulator::insert.
-   * @param[in] param_remap: parameters for accumulator::remap.
+   * @param[in] param_update: parameters for accumulator::update.
    * @param[in] param_merge: parameters for accumulator::merge.
    * @return a set of baselines found in the pool.
    */
@@ -126,14 +126,14 @@ namespace fdlsgm {
   find_segments(const std::vector<dls>& pool,
                 const size_t& size_threshold = 6,
                 const parameter& param_insert = default_param_insert,
-                const parameter& param_remap = default_param_remap,
+                const parameter& param_update = default_param_update,
                 const parameter& param_merge = default_param_merge);
   /**
    * @brief find baseline from a set of directed line segments.
    * @param[in] n_elements a number of line segments in the pool.
    * @param[in] pool: a set of directed line segments.
    * @param[in] param_insert: parameters for accumulator::insert.
-   * @param[in] param_remap: parameters for accumulator::remap.
+   * @param[in] param_update: parameters for accumulator::update.
    * @param[in] param_merge: parameters for accumulator::merge.
    * @return a set of baselines found in the pool.
    * @note The array pool should contain 6N double elements, where N is the
@@ -144,7 +144,7 @@ namespace fdlsgm {
                 const double* pool,
                 const size_t& size_threshold = 6,
                 const parameter& param_insert = default_param_insert,
-                const parameter& param_remap = default_param_remap,
+                const parameter& param_update = default_param_update,
                 const parameter& param_merge = default_param_merge);
 
   /** line segment defined by two vertices. */
@@ -553,7 +553,7 @@ namespace fdlsgm {
      *   - gap_limit: tolerance in gap length [0,1].
      *   - size_limit: not used.
      */
-    void remap(const parameter& param = default_param_remap);
+    void update(const parameter& param = default_param_update);
 
     /**
      * @brief merge similar baselines
@@ -676,7 +676,7 @@ namespace fdlsgm {
 
   template<index_t N>
   void
-  accumulator<N>::remap(const parameter& param)
+  accumulator<N>::update(const parameter& param)
   {
     const index_t n_elements = count_segment();
     const double& arg_limit_b = param.argument_limit_base;
