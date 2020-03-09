@@ -792,13 +792,13 @@ namespace fdlsgm {
     std::unordered_map<index_t, comp> best;
     for (auto& b: _baselines) {
       const index_t& i = (index_t)&b;
-      // calculate scatter (largest lateral distance)
+      // calculate scatter (mean squared lateral distance)
       double scatter = 1e-16;
       for (auto& e: b.elements()) {
         const auto& d = _elements[e];
-        double s = b.lateral_distance_squared(d);
-        scatter = (scatter>s)?scatter:s;
+        scatter += b.lateral_distance_squared(d);
       }
+      scatter /= b.size();
       for (auto& e: b.elements()) {
         if (best.find(e) != best.end()) {
           const auto& c = best.at(e);
