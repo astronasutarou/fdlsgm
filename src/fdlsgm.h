@@ -137,7 +137,7 @@ namespace fdlsgm {
    * @param[in] param_merge: parameters for accumulator::merge.
    * @return a set of baselines found in the pool.
    * @note The array pool should contain 6N double elements, where N is the
-           number of the directed line segments.
+   *       number of the directed line segments.
    */
   const std::vector<baseline_view>
   find_segments(const size_t& n_elements,
