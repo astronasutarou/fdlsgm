@@ -8,5 +8,4 @@ dist/
 *.pyc
 *.png
 
-/fdlsgm.c
-/fdlsgm.cpp
+/fdlsgm.c*
