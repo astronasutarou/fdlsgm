@@ -8,7 +8,7 @@ import os,sys,re
 
 
 with open('README.md', 'r') as fd:
-  version = '0.4.2'
+  version = '0.4.3'
   author = 'Ryou Ohsawa'
   email = 'ohsawa@ioa.s.u-tokyo.ac.jp'
   description = 'FDLSGM: Fast Directed Line Segment Grouping Method'
@@ -31,7 +31,12 @@ if os.path.exists('fdlsgm.pyx'):
   filename   = 'fdlsgm.pyx'
 else:
   USE_CYTHON = False
-  filename   = 'fdlsgm.cpp'
+  if os.path.exists('fdlsgm.cpp'):
+    filename   = 'fdlsgm.cpp'
+  elif os.path.exists('fdlsgm.cxx'):
+    filename   = 'fdlsgm.cxx'
+  if os.path.exists('fdlsgm.cc'):
+    filename   = 'fdlsgm.cc'
 
 
 if __name__ == '__main__':
