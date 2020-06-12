@@ -8,7 +8,7 @@ HEADER := src/fdlsgm.h src/linalg.h
 SOURCE := $(wildcard src/*.cc)
 OBJECT := $(patsubst %.cc,%.o,$(SOURCE))
 
-.PHONY: clean build build_pypi upload_test upload_pypi
+.PHONY: clean build test build_pypi upload_test upload_pypi
 
 all: test/sample_xyt test/sample_xyz
 
@@ -21,13 +21,16 @@ test/sample_%: test/sample_%.cc $(OBJECT) $(HEADER)
 build:
 	python setup.py build_ext --inplace
 
-build_pypi:
+test: build
+	python -c 'import fdlsgm as f; f.simple_demo_box()'
+
+build_pypi: bulid
 	python setup.py sdist bdist_wheel -p manylinux1_x86_64
 
-upload_test:
+upload_test: build_pypi
 	twine upload --skip-existing $(TESTPY) dist/*
 
-upload_pypi:
+upload_pypi: build_pypi
 	twine upload --skip-existing dist/*
 
 clean:

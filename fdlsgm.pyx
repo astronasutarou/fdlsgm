@@ -178,15 +178,15 @@ def solve(ndarray pool, object param = None):
   return baseline
 
 
-def simple_solver_test(
-    int group=30, int frame=12, int jammer=100, double scatter=0.01):
-  ''' Functional test with a simple situation.
+def simple_demo_box(
+    int n_segment=30, int n_elem=12, int n_fake=100, double scatter=0.01):
+  ''' Demo for line segments in a box with distractors.
 
-  Put `group` line segments composed of `frame` elementary segments in the
-  2000 x 2000 x 2000 space. The loci, lengths, and directions of the line
+  Put `n_segment` line segments composed of `n_elem` elementary segments in
+  the 100 x 100 x 100 space. The loci, lengths, and directions of the line
   segments are randomly selected. The line segments are slightly affected
   by disturbance. The degree of the disturbance is given by `scatter`.
-  Additionally, `jammer` obstacle segments are appended.
+  Additionally, `n_fake` obstacle segments are appended.
 
   This function calls the `solve` routine, which will search line segments
   in the space. The function prints the starting and terminal points of the
@@ -195,9 +195,9 @@ def simple_solver_test(
   detected line segments, and the elapsed time in milliseconds.
 
   Parameters:
-    group (int): the number of line segments.
-    frame (int): the number of elements composing a line segment.
-    jammer (int): the number of obstacle segments.
+    n_segment (int): the number of line segments.
+    n_elem (int): the number of elements composing a line segment.
+    n_fake (int): the number of obstacle segments.
     scatter (double): the scatter of line segments.
   '''
   cdef int n
@@ -205,16 +205,16 @@ def simple_solver_test(
   cdef list baseline
   from datetime import datetime
   segments = list()
-  shape = (frame,3)
-  for n in range(group):
-    p0 = np.random.uniform(-1000,1000, size=(1,3))
+  shape = (n_elem,3)
+  for n in range(n_segment):
+    p0 = np.random.uniform(-50,50, size=(1,3))
     v0 = np.random.normal(size=(1,3))
-    v = np.vstack((np.zeros((1,3)),np.cumsum(v0*np.ones((frame,3)),axis=0)))
-    p = np.hstack((p0+v[0:frame],p0+v[1:frame+1]))
+    v = np.vstack((np.zeros((1,3)),np.cumsum(v0*np.ones((n_elem,3)),axis=0)))
+    p = np.hstack((p0+v[0:n_elem],p0+v[1:n_elem+1]))
     p = p + np.random.normal(0.0, scatter, size=p.shape)
     segments.extend(p)
-  p0 = np.random.uniform(-100,100, size=(jammer,3))
-  p1 = p0 + np.random.normal(size=(jammer,3))
+  p0 = np.random.uniform(-50,50, size=(n_fake,3))
+  p1 = p0 + np.random.normal(0, 3, size=(n_fake,3))
   p = np.hstack((p0,p1))
   segments.extend(p)
 
@@ -235,3 +235,19 @@ def simple_solver_test(
   print('#')
   print('# found {} segments'.format(len(baseline)))
   print('# elapsed time: {}ms'.format((t1-t0).total_seconds()*1e3))
+
+  import matplotlib.pyplot as plt
+  from mpl_toolkits.mplot3d import Axes3D
+  from mpl_toolkits.mplot3d.art3d import Line3DCollection as lc
+  fig = plt.figure()
+  ax  = fig.add_subplot(111, projection='3d')
+  opt = dict(s = 5, color = (0.3,0.3,1.0,0.5))
+  ax.scatter(segments[:,0],segments[:,1],segments[:,2], **opt)
+  ax.scatter(segments[:,3],segments[:,4],segments[:,5], **opt)
+  opt = dict(color = (0.0,0.0,0.5,0.3), linewidth=1.0)
+  dlms = lc([(e[0:3],e[3:6]) for e in segments], **opt)
+  ax.add_collection(dlms)
+  opt = dict(color = (1.0,0.8,0.3,0.7), linewidth=5.0)
+  bxs = lc([(b.vertex0,b.vertex1) for b in baseline], **opt)
+  ax.add_collection(bxs)
+  plt.show()

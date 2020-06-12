@@ -8,7 +8,7 @@ import os,sys,re
 
 
 with open('README.md', 'r') as fd:
-  version = '0.4.3'
+  version = '0.5.0'
   author = 'Ryou Ohsawa'
   email = 'ohsawa@ioa.s.u-tokyo.ac.jp'
   description = 'FDLSGM: Fast Directed Line Segment Grouping Method'
@@ -77,5 +77,5 @@ if __name__ == '__main__':
     url='https://bitbucket.org/ryou_ohsawa/fdlsgm/src/master/',
     license=license,
     classifiers=classifiers,
-    install_requires=['numpy',],
+    install_requires=['numpy','matplotlib',],
     ext_modules=extensions)
