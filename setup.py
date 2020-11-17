@@ -1,19 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from glob import glob
-from setuptools import setup
-from distutils.extension import Extension
-from distutils.dist import Distribution
+from setuptools import setup, Extension
 import os,sys,re
 
 
 with open('README.md', 'r') as fd:
-  version = '0.5.0'
+  version = '0.5.1'
   author = 'Ryou Ohsawa'
   email = 'ohsawa@ioa.s.u-tokyo.ac.jp'
   description = 'FDLSGM: Fast Directed Line Segment Grouping Method'
   long_description = fd.read()
   license = 'MIT'
+
 
 classifiers = [
   'Development Status :: 3 - Alpha',
@@ -25,6 +24,7 @@ classifiers = [
   'Programming Language :: Python :: 3.7',
   'Programming Language :: Python :: Implementation :: CPython',
   'Topic :: Scientific/Engineering :: Astronomy']
+
 
 if os.path.exists('fdlsgm.pyx'):
   USE_CYTHON = True
@@ -49,7 +49,7 @@ if __name__ == '__main__':
   depends      = glob(os.path.join('src', '*.h'))
   libraries    = ['m',]
   include_dirs = [numpy.get_include(), 'src']
-  compile_args = ['-std=c++11']
+  compile_args = ['-std=c++11','-O2']
   extensions   = [
     Extension('fdlsgm',
               language='c++',
