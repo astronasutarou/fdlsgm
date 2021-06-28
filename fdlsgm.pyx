@@ -111,7 +111,7 @@ class solve_parameters(object):
   def __init__(self, limit = 6,
         insert = (3.0*np.pi/180.0, 5.0*np.pi/180.0, 1.0, 0.5, 0),
         update = (3.0*np.pi/180.0, 5.0*np.pi/180.0, 1.0, 0.5, 0),
-        merge  = (1.0*np.pi/180.0, 5.0*np.pi/180.0, 0.5, 0.5, 3)):
+        merge  = (3.0*np.pi/180.0, 5.0*np.pi/180.0, 1.0, 0.5, 3)):
     self.limit = limit
     self.insert = parameter_collection(*insert)
     self.update = parameter_collection(*update)
