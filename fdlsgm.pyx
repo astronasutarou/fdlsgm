@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from libcpp.vector cimport vector as vec
 from libcpp.list cimport list as clist
+from dataclasses import dataclass
 from numpy cimport ndarray
 import numpy as np
 
@@ -70,6 +71,7 @@ class baseline(object):
     return self.size
 
 
+@dataclass
 class parameter_collection(object):
   ''' Parameter collection for procedures.
 
@@ -85,12 +87,11 @@ class parameter_collection(object):
     gap_limit: threshold of gap between segments
     size_limit: threshold for the size of baseline
   '''
-  def __init__(self, lb=None, le=None, ld=None, lg=None, ls=None):
-    self.argument_limit_base = lb or 10.0*np.pi/180.0
-    self.argument_limit_element = le or 20.0*np.pi/180.0
-    self.distance_limit = ld or 3.0
-    self.gap_limit = lg or 0.5
-    self.size_limit = ls or 0
+  argument_limit_base: float    = 10.0*np.pi/180.0
+  argument_limit_element: float = 20.0*np.pi/180.0
+  distance_limit: float         = 3.0
+  gap_limit: float              = 0.5
+  size_limit: int               = 0
 
 
 class solve_parameters(object):
@@ -109,9 +110,9 @@ class solve_parameters(object):
     merge (list): parameter collection for the "merge" operation.
   '''
   def __init__(self, limit = 6,
-        insert = (10.0*np.pi/180.0, 30.0*np.pi/180.0, 5.0, 0.5, 0),
-        update = (10.0*np.pi/180.0, 30.0*np.pi/180.0, 5.0, 0.5, 0),
-        merge = (5.0*np.pi/180.0, 10.0*np.pi/180.0, 3.0, 0.5, 3)):
+        insert = (3.0*np.pi/180.0, 5.0*np.pi/180.0, 1.0, 0.5, 0),
+        update = (3.0*np.pi/180.0, 5.0*np.pi/180.0, 1.0, 0.5, 0),
+        merge  = (1.0*np.pi/180.0, 5.0*np.pi/180.0, 0.5, 0.5, 3)):
     self.limit = limit
     self.insert = parameter_collection(*insert)
     self.update = parameter_collection(*update)
