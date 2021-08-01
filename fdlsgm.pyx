@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 from libcpp.vector cimport vector as vec
 from libcpp.list cimport list as clist
+from dataclasses import dataclass, field, replace
+from typing import List
 from numpy cimport ndarray
 import numpy as np
 
@@ -51,25 +53,38 @@ cdef void set_parameter(parameter& param, object elem):
   param.size_limit = int(elem.size_limit)
 
 
+@dataclass
 class baseline(object):
   ''' Copy of baseline_view in Python.
 
   Attributes:
-    vertex0 (list): x-, y-, and z-coordinates of the starting point.
-    vertex1 (list): x-, y-, and z-coordinates of the terminal point.
-    size (int): the number of the elements composing the baseline.
-    elements (list): the indexes of the elements composing the baseline.
+    vertex0 (list):
+        (x,y,z)-coordinates of the starting point.
+    vertex1 (list):
+        (x,y,z)-coordinates of the terminal point.
+    size (int):
+        The number of the elements composing the baseline.
+    elements (list):
+        The indexes of the elements composing the baseline.
   '''
-  def __init__(self, list vertex0, list vertex1, int size, list elements):
-    self.vertex0  = vertex0
-    self.vertex1  = vertex1
-    self.size     = size
-    self.elements = elements
+  vertex0: list
+  vertex1: list
+  size: int
+  elements: list
+
+  ## workaround for Cython
+  __annotations__ = {
+    'vertex0': list,
+    'vertex1': list,
+    'size': int,
+    'elements': list,
+  }
 
   def __len__(self):
     return self.size
 
 
+@dataclass
 class parameter_collection(object):
   ''' Parameter collection for procedures.
 
@@ -79,18 +94,32 @@ class parameter_collection(object):
   used in the insert and reallocation procedures.
 
   Attributes:
-    argument_limit_base: threshold of angle difference
-    argument_limit_element: threshold of angle differnce
-    distance_limit: threshold of lateral distance between segments
-    gap_limit: threshold of gap between segments
-    size_limit: threshold for the size of baseline
+    argument_limit_base (float):
+        A threshold of angle difference.
+    argument_limit_element (float):
+        A threshold of angle differnce.
+    distance_limit (float):
+        A threshold of lateral distance between segments.
+    gap_limit (float):
+        A threshold of gap between segments.
+    size_limit (int):
+        A threshold for the size of baseline.
   '''
-  def __init__(self, lb=None, le=None, ld=None, lg=None, ls=None):
-    self.argument_limit_base = lb or 10.0*np.pi/180.0
-    self.argument_limit_element = le or 20.0*np.pi/180.0
-    self.distance_limit = ld or 3.0
-    self.gap_limit = lg or 0.5
-    self.size_limit = ls or 0
+
+  argument_limit_base: float = 3.0*np.pi/180.0
+  argument_limit_element: float = 3.0*np.pi/180.0
+  distance_limit: float = 1.0
+  gap_limit: float = 3.0
+  size_limit: int = 0
+
+  ## workaround for Cython
+  __annotations__ = {
+    'argument_limit_base': float,
+    'argument_limit_element': float,
+    'distance_limit': float,
+    'gap_limit': float,
+    'size_limit': int,
+  }
 
 
 class solve_parameters(object):
@@ -103,15 +132,19 @@ class solve_parameters(object):
   collesponding operations.
 
   Attributes:
-    limit (int): baselines whose size are smaller than `limit` are dropped.
-    insert (list): parameter collection for the "insert" operation.
-    update (list): parameter collection for the "update" operation.
-    merge (list): parameter collection for the "merge" operation.
+    limit (int):
+        Baselines whose size are smaller than `limit` are dropped.
+    insert (list):
+        A parameter collection for the "insert" operation.
+    update (list):
+        A parameter collection for the "update" operation.
+    merge (list):
+        A parameter collection for the "merge" operation.
   '''
   def __init__(self, limit = 6,
-        insert = (3.0*np.pi/180.0, 5.0*np.pi/180.0, 1.0, 0.5, 0),
-        update = (3.0*np.pi/180.0, 5.0*np.pi/180.0, 1.0, 0.5, 0),
-        merge  = (3.0*np.pi/180.0, 5.0*np.pi/180.0, 1.0, 0.5, 3)):
+        insert = (3.0*np.pi/180.0, 3.0*np.pi/180.0, 1.0, 3.0, 0),
+        update = (3.0*np.pi/180.0, 3.0*np.pi/180.0, 1.0, 3.0, 0),
+        merge  = (3.0*np.pi/180.0, 3.0*np.pi/180.0, 1.0, 3.0, 3)):
     self.limit = limit
     self.insert = parameter_collection(*insert)
     self.update = parameter_collection(*update)
@@ -148,11 +181,13 @@ def solve(ndarray pool, object param = None):
   ''' Find line segments from a set of elementary line segments.
 
   Parameters:
-    pool (numpy.ndarray): N x 6 array containing the coordinates.
-    param (solve_parameters): Parameter set for solver.
+    pool (numpy.ndarray):
+        An N x 6 array containing the coordinates.
+    param (solve_parameters):
+        A parameter set for solver.
 
   Return:
-    list of baseline.
+    A list of baselines.
   '''
   if isinstance(pool,np.ndarray):
     pool = pool.flatten()
@@ -195,10 +230,14 @@ def simple_demo_box(
   detected line segments, and the elapsed time in milliseconds.
 
   Parameters:
-    n_segment (int): the number of line segments.
-    n_elem (int): the number of elements composing a line segment.
-    n_fake (int): the number of obstacle segments.
-    scatter (double): the scatter of line segments.
+    n_segment (int):
+        The number of line segments.
+    n_elem (int):
+        The number of elements composing a line segment.
+    n_fake (int):
+        The number of obstacle segments.
+    scatter (double):
+        The scatter of line segments.
   '''
   cdef int n
   cdef double x0,y0,z0,x1,y1,z1,x2,y2,z2,vx,vy,vz
