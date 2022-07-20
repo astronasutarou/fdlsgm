@@ -15,6 +15,9 @@ all:
 .cc.o: $(HEADER)
 	$(CXX) -o $@ -c $<
 
+test/%:test/%.cc $(OBJECT)
+	$(CXX) -o $@ $^
+
 build:
 	python setup.py build_ext --inplace
 
