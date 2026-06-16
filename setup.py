@@ -7,17 +7,14 @@ from setuptools import Extension, setup
 
 
 def get_extensions():
-    try:
-        import numpy
-    except ImportError as exc:
-        raise SystemExit('NumPy is required to build fdlsgm.') from exc
-    use_cython = os.path.exists('fdlsgm.pyx')
-    source = 'fdlsgm.pyx' if use_cython else 'fdlsgm.cpp'
+    from Cython.Build import cythonize
+    import numpy
+
     extensions = [
         Extension(
             'fdlsgm',
             language='c++',
-            sources=[source] + glob(os.path.join('src', '*.cc')),
+            sources=['fdlsgm.pyx'] + glob(os.path.join('src', '*.cc')),
             libraries=['m'],
             include_dirs=[numpy.get_include(), 'src'],
             depends=glob(os.path.join('src', '*.h')),
@@ -25,16 +22,11 @@ def get_extensions():
         )
     ]
 
-    if use_cython:
-        from Cython.Build import cythonize
-
-        return cythonize(
-            extensions,
-            build_dir=os.path.join('build', 'cython'),
-            language_level=3,
-        )
-
-    return extensions
+    return cythonize(
+        extensions,
+        build_dir=os.path.join('build', 'cython'),
+        language_level=3,
+    )
 
 
 setup(ext_modules=get_extensions())
