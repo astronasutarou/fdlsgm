@@ -7,8 +7,10 @@ from setuptools import Extension, setup
 
 
 def get_extensions():
-    import numpy
-
+    try:
+        import numpy
+    except ImportError as exc:
+        raise SystemExit('NumPy is required to build fdlsgm.') from exc
     use_cython = os.path.exists('fdlsgm.pyx')
     source = 'fdlsgm.pyx' if use_cython else 'fdlsgm.cpp'
     extensions = [
