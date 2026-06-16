@@ -1,0 +1,55 @@
+[build-system]
+requires = [
+  "setuptools>=64",
+  "Cython>=0.29",
+  "numpy>=1.22",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fdlsgm"
+version = "0.5.6"
+description = "FDLSGM: Fast Directed Line Segment Grouping Method"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+  {name = "Ryou Ohsawa", email = "ohsawa@ioa.s.u-tokyo.ac.jp"},
+]
+maintainers = [
+  {name = "Ryou Ohsawa", email = "ohsawa@ioa.s.u-tokyo.ac.jp"},
+]
+dependencies = [
+  "numpy>=1.22",
+  "matplotlib>=3.5",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: C++",
+  "Programming Language :: Cython",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Astronomy",
+]
+
+[project.urls]
+Homepage = "https://bitbucket.org/ryou_ohsawa/fdlsgm/src/master/"
+
+[tool.setuptools]
+packages = []
+py-modules = []
+
+[tool.cibuildwheel]
+build = "cp39-* cp310-* cp311-* cp312-*"
+skip = "*-musllinux* pp*"
+test-command = "python -c \"import fdlsgm; print(fdlsgm.__file__)\""
