@@ -10,4 +10,7 @@ The library is written in _C++11_ and do not depends on any library outside of t
 
 
 ## References
+
+Jeong-Hun Jang & Ki-Sang Hong, Pattern Recognition 35 (2002), 2235--2247
+
 [^JH2002]: Jeong-Hun Jang & Ki-Sang Hong, Pattern Recognition 35 (2002), 2235--2247 (doi: [10.1016/S0031-3203(01)00175-3](https://doi.org/10.1016/S0031-3203(01)00175-3 "Jand & Hong (2002)"))
