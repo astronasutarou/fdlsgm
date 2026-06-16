@@ -6,6 +6,8 @@
  */
 #include "fdlsgm.h"
 
+#include <stdexcept>
+
 
 namespace fdlsgm {
   dls::dls()
