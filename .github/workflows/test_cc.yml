@@ -1,0 +1,27 @@
+name: test_cc
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test_cc:
+    name: Build and run C++ samples
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        sample:
+          - sample_xyz
+          - sample_xyt
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Build ${{ matrix.sample }}.cc
+        run: make test/${{ matrix.sample }}
+
+      - name: Run ${{ matrix.sample }}
+        run: ./test/${{ matrix.sample }} > /tmp/${{ matrix.sample }}_output.txt
