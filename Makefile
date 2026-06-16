@@ -29,4 +29,4 @@ build:
 	python -m build --outdir $(DIST_DIR)
 
 clean:
-	rm -r $(BUILD_DIR) $(EGG_INFO) $(OBJECT)
+	rm -rf $(BUILD_DIR) $(EGG_INFO) $(OBJECT)
