@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fdlsgm"
-version = "0.5.6"
+version = "0.5.7"
 description = "FDLSGM: Fast Directed Line Segment Grouping Method"
 readme = "README.md"
 requires-python = ">=3.9"
